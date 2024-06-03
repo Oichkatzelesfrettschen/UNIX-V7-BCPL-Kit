@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Home | Robert Nordier</title>
+<meta name="author" content="Robert Nordier (www.nordier.com)">
+<meta name="copyright" content="Copyright (c) 2007-2020 Robert Nordier">
+<meta name="google-site-verification" content="aBq3WdqREod0BZq4kByIl3iUAhT2Wa6NTt-Gw_r_K40">
+<link rel="stylesheet" href="Home%20Robert%20Nordier_files/index.css" type="text/css">
+</head>
+
+<body>
+  <h1><a href="https://www.nordier.com/">Robert Nordier</a></h1>
+
+  <div class="overview">
+   <p>
+    Email: info (at) nordier.com
+   </p>
+  </div>
+  <div>
+   <h2>Overview</h2>
+   <p>
+    I work for a US-based semiconductor company as lead
+    software engineer responsible for C compiler development.
+    The software made available here generally reflects an
+    interest in C and UNIX, and the earlier history of computing.
+   </p>
+  <div>
+
+  <div>
+<h2 id="bcpl">Classic BCPL</h2>
+
+<p>BCPL was apparently first implemented by Martin Richards at MIT
+    around 1967, and was a widely-used systems programming language
+    during the 1970s.  However, it is chiefly remembered nowadays,
+    because it directly inspired the programming language B, which
+    in turn gave rise to the immensely successful language C.</p>
+
+<p>To anyone interested in the whys and wherefores of C, a passing
+   acquaintance with BCPL is worthwhile.  Viewed forwards through
+   BCPL, rather than backwards through Java and C++, many C constructs,
+   and idiomatic C ways of doing things, just make a lot more
+   sense.</p>
+
+<p>Beyond its historical importance, BCPL had intrinsic merits.
+   In retrospect, what particularly impresses, is the elegant
+   simplicity of its compiler.  This is well documented in the book
+   <em>BCPL: the language and its compiler</em> by Martin Richards
+   and Colin Whitby-Strevens (Cambridge: Cambridge University Press,
+   1979).</p>
+
+<p>In its heyday, a great virtue of BCPL was portability.  Through
+   the use of INTCODE (a simple assembly language for an abstract
+   machine), the problem of first bringing up the compiler on a new
+   platform was reduced to that of coding an INTCODE interpreter in some
+   high-level language.  Such a task might take only a day or two.</p>
+
+<p>The focus here is on "classic" BCPL, as it was around 1979,
+   and the implementations are very close to that described in the
+   BCPL book.</p>
+
+<h3>obcpl - Classic BCPL Compiler</h3>
+
+<p>This is an x86 (i386) port of the "classic" old BCPL compiler
+   (around 1980) from the Tripos Research Group at Cambridge
+   University.  This is a distribution suitable for compiling and
+  running a range of older BCPL programs on 64-bit and 32-bit
+  Linux and FreeBSD systems</p>
+
+<p>As a real, working computer language implementation, that can
+   be studied, modified, and played with, this old BCPL compiler
+   has a good deal to recommend it.  The compiler frontend consists
+   of only about 2,000 lines of BCPL code, and (as supplied here)
+   compiles to a static (fully-linked) x86 binary that is less than
+   36,000 bytes in size.</p>
+
+<p>The present distribution supplies a compiler backend (OCODE to
+   x86 code generator), together with peephole optimizer, and
+   reasonably extensive runtime support.  A few revisions have been
+   made to the compiler frontend — it looks for header files in a
+   standard location, for instance — and  the runtime incorporates
+   support for UNIX command line arguments and error reporting.
+   Some documentation that formed part of the original BCPL
+   distribution tape is also included, as are a few utility
+   programs.</p>
+
+<p>Download the latest distribution:<a href="https://www.nordier.com/software/distfiles/obcpl-0.9.8.tar.xz">
+   obcpl-0.9.8.tar.xz</a>.</p>
+
+<h3>bcplkit - Classic BCPL Porting Kit</h3>
+
+<p>An earlier distribution presents the Cambridge BCPL porting kit,
+   with an INTCODE interpreter and an INTCODE to x86 code generator.
+   Again, the primary version is for FreeBSD and Linux systems.
+   This is a less capable compiler, and the <strong>obcpl</strong>
+   distribution is to be preferred unless you are interested in
+   INTCODE specifically.</p>
+
+<p>Download the latest distribution:<a href="https://www.nordier.com/software/distfiles/bcplkit-0.9.7.tar.xz">
+   bcplkit-0.9.7.tar.xz</a>.</p>
+
+<h3>bcpltape - a BCPL distribution from 1984</h3>
+
+<p>Also available are the original BCPL
+   distribution files that the other
+   distributions make use of.
+
+   The direct source of these files was a tar archive "bcpltape.tgz"
+   that was originally made available — around 1991, I would guess
+   — by Ken Yap.  The archive consists
+   of a brief README and fifty-five files named "f01" to "f75",
+   twenty files not being present.  The README notes that the
+   supplied archive contains all the files from Martin Richards'
+   "transport" tape with the exception of IBM360 object files.  The
+   Cambridge files have date stamps early in November 1984.</p>
+
+<p>As the original porting kit archive seemed to have dropped off
+   the web when I went looking for it, I am making it available
+   here.  In redistributing it, I have corrected a number of character
+   mapping problems, apparently caused by incompatible EBCDIC
+   dialects, and have assigned meaningful names to the files and
+   grouped them in directories according to internal evidence.</p>
+
+<p>Download the bcpltape distribution: <a href="https://www.nordier.com/software/distfiles/bcpltape.tar.xz">bcpltape.tar.xz</a></p>
+
+<h3>BCPL Elsewhere</h3>
+
+<p>The <a href="https://projects.exeter.ac.uk/BCPL/WindowsBCPL.htm">
+   Classic BCPL for Windows</a> distribution from David Cannon makes
+   use of portions of the software supplied here, and is a simple
+   solution to the problem of compiling old BCPL programs on that
+   platform.</p>
+
+<p><a href="http://www.cl.cam.ac.uk/~mr10/">Martin Richards</a>,
+   the originator of BCPL, has continued to develop the language,
+   and has a large and complex distribution of "present day" BCPL
+   available, together with some archive materials, at his home
+   page.</p>
+
+  </div>
+  <div>
+  <h2 id="v7x86">v7/x86</h2>
+
+<p>V7/x86 was a port of the Seventh Edition of the UNIX operating system
+   to the x86 (IA-32) based PC: UNIX V7 being the last general
+   distribution — around 1979 — to come from the Research group at Bell
+   Labs, the original home of UNIX.  The port was begun in 1999 when
+   "Ancient UNIX" source code licenses first became available, and code
+   was revised, with some enhancements, during 2006-7.</p><p>
+
+</p><p>V7/x86 supported ATA (IDE) hard drives, ATAPI CDROM drives, a 1.44M
+   floppy drive, and standard serial ports, in addition to the
+   usual PC screen and keyboard.  For easier installation and setup,
+   supplied utilities allowed access to CD (ISO 9660) and FAT (MS-DOS)
+   filesystems.</p><p>
+
+</p><p>Extras included a custom UNIX-style x86 assembler, an ACK
+   (Amsterdam Compiler Kit) based C compiler, and several key early UCB
+   software components such as the C shell, the editors <strong>ex</strong>
+   and <strong>vi</strong>, and the pager <strong>more</strong>. Source
+   code was made available under a BSD-style license.</p><p>
+
+</p><p>The hardware that v7/x86 was intended to run on — floppy drives,
+   serial ports, and all — is no longer readily available, although it remains
+   possible to try out v7/x86, given suitable virtual machine software,
+   and with careful setup.  Be aware, however, that this was beta software
+   and not a polished release: most things work reasonably well, but there
+   are exceptions.</p>
+
+<p>Complete v7/x86 distribution:<a href="https://www.nordier.com/v7x86/v7x86-0.8a-all.tar.xz">
+   v7x86-0.8a-all.tar.xz</a>.</p>
+  </div>
+
+  <div>
+<p>&nbsp;</p>
+  </div>
+
+<div id="footer">
+<p>Copyright © 2007-2020 Robert Nordier. All rights reserved.</p>
+</div>
+
+
+
+</div></div></body></html>
