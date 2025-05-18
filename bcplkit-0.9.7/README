@@ -1,0 +1,42 @@
+BCPLKIT README
+
+This is an x86 (IA-32) port of an old BCPL compiler kit (around 1980)
+from the Tripos Research Group at Cambridge University.
+
+BCPL was a very popular systems programming language during the 1960s
+and 1970s.  At Bells Labs in the Sixties, about the time of the birth
+of UNIX, BCPL directly inspired the computer language B and had a big
+influence on the development of C.
+
+The compiler available here is very close to that featured in the book,
+_BCPL -- the language and its compiler_ by Martin Richards and Colin
+Whitby-Stevens (Cambridge: Cambridge University Press, 1979).
+
+The present port includes both an INTCODE interpreter and an INTCODE
+to x86 native code generator.  A few features have been added to the
+compiler to make it easier to use -- it looks for header files in a
+standard location, for instance -- and additional language feature
+support allows programs to handle I/O operations to named files, to
+accept command line arguments, and other useful things.
+
+The compiler driver accepts a -O option, and will attempt to invoke
+copt, the retargetable peephole optimizer by Chris Fraser.  A "rules"
+file for use with copt is supplied.
+
+A language manual forms part of the documentation.  There is other
+documentation relating to implementation details.
+
+Martin Richards, the creator of BCPL, has a home page at
+
+    http://www.cl.cam.ac.uk/~mr10/
+
+and supplies a current BCPL compiler (considerably more sophisticated
+than this classic early implementation).  He also has BCPL programs and
+archive material available.
+
+The web page for this port is
+
+    http://www.nordier.com/software/bcplkit.html
+
+Robert Nordier
+www.nordier.com
