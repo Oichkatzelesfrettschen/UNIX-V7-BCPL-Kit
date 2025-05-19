@@ -32,7 +32,7 @@ e.def:	e.y
 $(FILES):	e.h e.def
 
 list:
-	pr TODO $(SOURCE) makefile
+#      pr TODO $(SOURCE) makefile
 
 gcos:	y.tab.c
 	fsend e.h e.y *.c
