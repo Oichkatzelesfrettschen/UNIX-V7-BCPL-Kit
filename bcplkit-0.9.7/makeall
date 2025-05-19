@@ -16,6 +16,31 @@ if test -z "$1"; then
 fi
 
 # Configure
+
+os=`uname`
+arch=`uname -m`
+case "${os}" in
+FreeBSD)
+    sys="sys_freebsd.s" ;;
+Linux)
+    if [ "${arch}" = "x86_64" ]; then
+        sys="sys_linux64.s"
+        bits=64
+    else
+        sys="sys_linux.s"
+        bits=32
+    fi
+    ;;
+*)
+    echo "${os}: Not supported" 1>&2
+    exit 2
+esac
+rm -f src/sys.s
+ln -s ${sys} src/sys.s
+echo "Configured for ${os}"
+
+if [ -z "$bits" ]; then
+    [ "${arch}" = "x86_64" ] && bits=64 || bits=32
 # Replace an existing regular file with the correct symbolic link
 if [ -e src/sys.s ] && [ ! -h src/sys.s ]; then
     echo "Replacing stale sys.s"
@@ -43,10 +68,11 @@ else
     ln -s ${sys} src/sys.s
     echo "Configured for ${os}"
 fi
+export BUILD_BITS=${bits}
 
 # Make
 for dir in ${DIRS}
 do
     echo "===== ${dir} ====="
-    (cd ${dir} && ${MAKE} ${target})
+    (cd ${dir} && BUILD_BITS=${bits} ${MAKE} ${target})
 done
