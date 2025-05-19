@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <assert.h>
 #include "blib.h"
 
 #define VSIZE 32000
@@ -26,28 +29,32 @@
 #define K2 0140002
 #define X22 0160026
 
-int *M;
+typedef int32_t word_t;
+static_assert(sizeof(word_t) * CHAR_BIT == WORDSIZE,
+              "INTCODE word size mismatch");
+
+word_t *M;
 FILE *fp;
 
-static int G;
-static int P;
+static word_t G;
+static word_t P;
 static int Ch;
 static int Cyclecount;
-static int *Labv;
-static int Cp;
-static int A;
-static int B;
-static int C;
-static int D;
-static int W;
+static word_t *Labv;
+static word_t Cp;
+static word_t A;
+static word_t B;
+static word_t C;
+static word_t D;
+static word_t W;
 
 static void assemble(void);
-static void stw(int);
-static void stc(int);
+static void stw(word_t);
+static void stc(word_t);
 static void rch(void);
-static int rdn(void);
+static word_t rdn(void);
 static void setlab(int);
-static void labref(int, int);
+static void labref(int, word_t);
 static int interpret(void);
 static int icgetbyte(int, int);
 static void icputbyte(int, int, int);
@@ -55,9 +62,9 @@ static void icputbyte(int, int, int);
 static void
 assemble(void)
 {
-    int v[501];
+    word_t v[501];
     int f = 0;
-    int i;
+    word_t i;
 
     Labv = v;
 clear:
@@ -123,7 +130,7 @@ sw:
         stw(0);
         labref(rdn(), P - 1);
     } else {
-        int a = rdn();
+        word_t a = rdn();
         if ((a & ABITS) == a)
             stw(W + a);
         else { stw(W + DBIT); stw(a); }
@@ -132,14 +139,14 @@ sw:
 }
 
 static void
-stw(int w)
+stw(word_t w)
 {
     M[P++] = w;
     Cp = 0;
 }
 
 static void
-stc(int c)
+stc(word_t c)
 {
     if (Cp == 0) { stw(0); Cp = WORDSIZE; }
     Cp -= BYTESIZE;
@@ -156,10 +163,10 @@ rch(void)
     }
 }
 
-static int
+static word_t
 rdn(void)
 {
-    int a = 0, b = FALSE;
+    word_t a = 0, b = FALSE;
     if (Ch == '-') { b = TRUE; rch(); }
     while ('0' <= Ch && Ch <= '9') { a = 10 * a + Ch - '0'; rch(); }
     if (b) a = -a;
@@ -169,20 +176,20 @@ rdn(void)
 static void
 setlab(int n)
 {
-    int k = Labv[n];
+    word_t k = Labv[n];
     if (k < 0) printf("L%d ALREADY SET TO %d AT P = %d\n", n, -k, P);
     while (k > 0) {
-        int n = M[k];
+        word_t next = M[k];
         M[k] = P;
-        k = n;
+        k = next;
     }
     Labv[n] = -P;
 }
 
 static void
-labref(int n, int a)
+labref(int n, word_t a)
 {
-    int k = Labv[n];
+    word_t k = Labv[n];
     if (k < 0) k = -k; else Labv[n] = a;
     M[a] += k;
 }
@@ -278,7 +285,7 @@ fetch:
 
 int main(int argc, char *argv[])
 {
-    int pgvec[VSIZE];
+    word_t pgvec[VSIZE];
 
     if (argc != 2) {
         fprintf(stderr, "usage: icint file\n");

@@ -10,61 +10,62 @@
                 .global finish
                 .global stop
 _start:         cld
-//
-                mov %esp,%ecx
-                sub $256,%esp
-                mov %esp,%edi
-                inc %edi
-                cmpl $2,(%ecx)
+// Preserve initial stack pointer in RCX and create a small
+// temporary area on the stack for parsing the arguments.
+                mov %rsp,%rcx
+                sub $256,%rsp
+                mov %rsp,%rdi
+                inc %rdi
+                cmpl $2,(%rcx)
                 jb start.4
 //
-                lea 8(%ecx),%ebx
-                mov (%ebx),%esi
+                lea 8(%rcx),%rbx
+                mov (%rbx),%rsi
                 jmp start.3
 //
 start.1:        mov $' ',%al
-start.2:        cmp %ecx,%edi
+start.2:        cmp %rcx,%rdi
                 je start.4
                 stosb
 start.3:        lodsb
                 test %al,%al
                 jnz start.2
-                add $4,%ebx
-                mov (%ebx),%esi
+                add $8,%rbx
+                mov (%rbx),%rsi
                 test %esi,%esi
                 jnz start.1
 //
-start.4:        mov %edi,%ebx
-                sub %esp,%ebx
-                dec %ebx
-                mov %bl,(%esp,1)
+start.4:        mov %rdi,%rbx
+                sub %rsp,%rbx
+                dec %rbx
+                mov %bl,(%rsp,1)
 //
-                sub %edi,%ecx
-                and $3,%ecx
+                sub %rdi,%rcx
+                and $7,%rcx
                 xor %eax,%eax
                 rep stosb
 //
                 call rtinit
                 push $STKSIZ
                 call sbrk
-                pop %ecx
+                pop %rcx
 //
-                mov $G,%edi
-                mov %eax,%ebp
+                mov $G,%rdi
+                mov %rax,%rbp
 //
                 shr $2,%eax
-                mov %eax,STACKBASE*4(%edi)
+                mov %eax,STACKBASE*4(%rdi)
                 add $STKSIZ>>2,%eax
-                mov %eax,STACKEND*4(%edi)
+                mov %eax,STACKEND*4(%rdi)
 //
-                movl $0,(%ebp)
-                movl $finish,4(%ebp)
-                mov %esp,%eax
-                shr $2,%eax
-                mov %eax,8(%ebp)
-                mov 4(%edi),%eax
-                jmp *%eax
+                movl $0,(%rbp)
+                movl $finish,4(%rbp)
+                mov %rsp,%rax
+                shr $2,%rax
+                mov %eax,8(%rbp)
+                mov 4(%rdi),%eax
+                jmp *%rax
 finish:         xor %eax,%eax
-stop:           push %eax
+stop:           push %rax
                 call rtexit
                 call _exit

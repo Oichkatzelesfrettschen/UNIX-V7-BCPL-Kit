@@ -1,5 +1,4 @@
-# $Id: Makefile,v 1.8 2004/12/21 14:05:03 rn Exp $
-
+# BCPL kit build rules
 PREFIX?=/usr/local
 
 # toolchain configuration (defaults may be overridden)
@@ -9,195 +8,209 @@ CC ?= cc
 AFLAGS ?= --32
 CFLAGS ?= -m32
 LDFLAGS ?= -m elf_i386
+# Determine build architecture
+ARCHBITS ?= $(shell [ "$(BUILD_BITS)" ] && echo $(BUILD_BITS) || \
+([ "`uname -m`" = "x86_64" ] && echo 64 || echo 32))
+OBJDIR ?= build/$(ARCHBITS)
+BINDIR ?= $(OBJDIR)
 
-all: st cg xg
+CFLAGS += -m$(ARCHBITS) -std=c23
+AFLAGS += --$(ARCHBITS)
+LDFLAGS += -m $(if $(filter 64,$(ARCHBITS)),elf_x86_64,elf_i386)
 
-xg: su.o xg.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o xg su.o xg.o rt.o sys.o
+O := $(OBJDIR)
+B := $(BINDIR)
+$(OBJDIR):
+		mkdir -p $(OBJDIR)
+all: $(B)/st $(B)/cg $(B)/xg
+st: $(B)/st
+cg: $(B)/cg
+xg: $(B)/xg
+xg1: $(B)/xg1
+cg1: $(B)/cg1
+st1: $(B)/st1
+xg0: $(B)/xg0
+cg0: $(B)/cg0
+st0: $(B)/st0
+icint: $(B)/icint
 
-xg.o: xg.s
-	$(AS) $(AFLAGS) -o xg.o xg.s
+$(B)/xg: $(O)/su.o $(O)/xg.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/xg.o $(O)/rt.o $(O)/sys.o
 
-xg.s: xg1 xg.int
-	./xg1 <xg.int
-	mv ASM xg.s
+$(O)/xg.o: xg.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ xg.s
 
-xg.int: st1 cg1 iclib.i blib.i xg.b
-	./st1 < xg.b
-	./cg1 < OCODE
-	cat iclib.i blib.i INTCODE >xg.int
+xg.s: $(B)/xg1 xg.int
+	$(B)/xg1 <xg.int
+		mv ASM xg.s
 
-cg: su.o cg.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o cg su.o cg.o rt.o sys.o
+xg.int: $(B)/st1 $(B)/cg1 iclib.i blib.i xg.b
+	$(B)/st1 < xg.b
+	$(B)/cg1 < OCODE
+		cat iclib.i blib.i INTCODE >xg.int
 
-cg.o: cg.s
-	$(AS) $(AFLAGS) -o cg.o cg.s
+$(B)/cg: $(O)/su.o $(O)/cg.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/cg.o $(O)/rt.o $(O)/sys.o
 
-cg.s: xg1 cg.int
-	./xg1 <cg.int
-	mv ASM cg.s
+$(O)/cg.o: cg.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ cg.s
 
-cg.int: st1 cg1 iclib.i blib.i cg.b
-	./st1 < cg.b
-	./cg1 < OCODE
-	cat iclib.i blib.i INTCODE >cg.int
+cg.s: $(B)/xg1 cg.int
+	$(B)/xg1 <cg.int
+		mv ASM cg.s
 
-st: su.o st.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o st su.o st.o rt.o sys.o
+cg.int: $(B)/st1 $(B)/cg1 iclib.i blib.i cg.b
+	$(B)/st1 < cg.b
+	$(B)/cg1 < OCODE
+		cat iclib.i blib.i INTCODE >cg.int
 
-st.o: st.s
-	$(AS) $(AFLAGS) -o st.o st.s
+$(B)/st: $(O)/su.o $(O)/st.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/st.o $(O)/rt.o $(O)/sys.o
 
-st.s: xg1 st.int
-	./xg1 <st.int
-	mv ASM st.s
+$(O)/st.o: st.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ st.s
 
-st.int: st1 cg1 iclib.i blib.i syn.b trn.b
-	./st1 < syn.b
-	./cg1 < OCODE
-	cat iclib.i blib.i INTCODE >st.int
-	./st1 < trn.b
-	./cg1 < OCODE
-	cat INTCODE >>st.int
+st.s: $(B)/xg1 st.int
+	$(B)/xg1 <st.int
+		mv ASM st.s
 
-xg1: su.o xg1.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o xg1 su.o xg1.o rt.o sys.o
+st.int: $(B)/st1 $(B)/cg1 iclib.i blib.i syn.b trn.b
+	$(B)/st1 < syn.b
+	$(B)/cg1 < OCODE
+		cat iclib.i blib.i INTCODE >st.int
+	$(B)/st1 < trn.b
+	$(B)/cg1 < OCODE
+		cat INTCODE >>st.int
 
-xg1.o: xg1.s
-	$(AS) $(AFLAGS) -o xg1.o xg1.s
+$(B)/xg1: $(O)/su.o $(O)/xg1.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/xg1.o $(O)/rt.o $(O)/sys.o
 
-xg1.s: xg0 xg1.int xg1.int
-	./xg0 <xg1.int
-	mv ASM xg1.s
+$(O)/xg1.o: xg1.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ xg1.s
 
-xg1.int: st0 cg0 iclib.i blib.i xg.b
-	./st0 < xg.b
-	./cg0 < OCODE
-	cat iclib.i blib.i INTCODE >xg1.int
+xg1.s: $(B)/xg0 xg1.int xg1.int
+	$(B)/xg0 <xg1.int
+		mv ASM xg1.s
 
-cg1: su.o cg1.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o cg1 su.o cg1.o rt.o sys.o
+xg1.int: $(B)/st0 $(B)/cg0 iclib.i blib.i xg.b
+	$(B)/st0 < xg.b
+	$(B)/cg0 < OCODE
+		cat iclib.i blib.i INTCODE >xg1.int
 
-cg1.o: cg1.s
-	$(AS) $(AFLAGS) -o cg1.o cg1.s
+$(B)/cg1: $(O)/su.o $(O)/cg1.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/cg1.o $(O)/rt.o $(O)/sys.o
 
-cg1.s: xg0 xg1.int cg1.int
-	./xg0 <cg1.int
-	mv ASM cg1.s
+$(O)/cg1.o: cg1.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ cg1.s
 
-cg1.int: st0 cg0 iclib.i blib.i cg.b
-	./st0 < cg.b
-	./cg0 < OCODE
-	cat iclib.i blib.i INTCODE >cg1.int
+cg1.s: $(B)/xg0 xg1.int cg1.int
+	$(B)/xg0 <cg1.int
+		mv ASM cg1.s
 
-st1: su.o st1.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o st1 su.o st1.o rt.o sys.o
+cg1.int: $(B)/st0 $(B)/cg0 iclib.i blib.i cg.b
+	$(B)/st0 < cg.b
+	$(B)/cg0 < OCODE
+		cat iclib.i blib.i INTCODE >cg1.int
 
-st1.o: st1.s
-	$(AS) $(AFLAGS) -o st1.o st1.s
+$(B)/st1: $(O)/su.o $(O)/st1.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/st1.o $(O)/rt.o $(O)/sys.o
 
-st1.s: xg0 xg1.int st1.int
-	./xg0 <st1.int
-	mv ASM st1.s
+$(O)/st1.o: st1.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ st1.s
 
-st1.int: st0 cg0 iclib.i blib.i syn.b trn.b
-	./st0 < syn.b
-	./cg0 < OCODE
-	cat iclib.i blib.i INTCODE >st1.int
-	./st0 < trn.b
-	./cg0 < OCODE
-	cat INTCODE >>st1.int
+st1.s: $(B)/xg0 xg1.int st1.int
+	$(B)/xg0 <st1.int
+		mv ASM st1.s
 
-xg0: su.o xg0.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o xg0 su.o xg0.o rt.o sys.o
+st1.int: $(B)/st0 $(B)/cg0 iclib.i blib.i syn.b trn.b
+	$(B)/st0 < syn.b
+	$(B)/cg0 < OCODE
+		cat iclib.i blib.i INTCODE >st1.int
+	$(B)/st0 < trn.b
+	$(B)/cg0 < OCODE
+		cat INTCODE >>st1.int
 
-xg0.o: xg0.s
-	$(AS) $(AFLAGS) -o xg0.o xg0.s
+$(B)/xg0: $(O)/su.o $(O)/xg0.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/xg0.o $(O)/rt.o $(O)/sys.o
 
-xg0.s: icint xg0.int xg0.int
-	./icint xg0.int <xg0.int
-	mv ASM xg0.s
+$(O)/xg0.o: xg0.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ xg0.s
 
-cg0: su.o cg0.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o cg0 su.o cg0.o rt.o sys.o
+xg0.s: $(B)/icint xg0.int xg0.int
+	$(B)/icint xg0.int <xg0.int
+		mv ASM xg0.s
 
-cg0.o: cg0.s
-	$(AS) $(AFLAGS) -o cg0.o cg0.s
+$(B)/cg0: $(O)/su.o $(O)/cg0.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/cg0.o $(O)/rt.o $(O)/sys.o
 
-cg0.s: icint xg0.int cg0.int
-	./icint xg0.int <cg0.int
-	mv ASM cg0.s
+$(O)/cg0.o: cg0.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ cg0.s
 
-st0: su.o st0.o rt.o sys.o
-	$(LD) $(LDFLAGS) -o st0 su.o st0.o rt.o sys.o
+cg0.s: $(B)/icint xg0.int cg0.int
+	$(B)/icint xg0.int <cg0.int
+		mv ASM cg0.s
 
-st0.o: st0.s
-	$(AS) $(AFLAGS) -o st0.o st0.s
+$(B)/st0: $(O)/su.o $(O)/st0.o $(O)/rt.o $(O)/sys.o | $(BINDIR)
+	$(LD) $(LDFLAGS) -o $@ $(O)/su.o $(O)/st0.o $(O)/rt.o $(O)/sys.o
 
-st0.s: icint xg0.int st0.int
-	./icint xg0.int <st0.int
-	mv ASM st0.s
+$(O)/st0.o: st0.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ st0.s
 
-sys.o: sys.s
-	$(AS) $(AFLAGS) -o sys.o sys.s
+st0.s: $(B)/icint xg0.int st0.int
+	$(B)/icint xg0.int <st0.int
+		mv ASM st0.s
 
-rt.o: rt.s
-	$(AS) $(AFLAGS) -o rt.o rt.s
+$(O)/sys.o: sys.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ sys.s
 
-su.o: su.s
-	$(AS) $(AFLAGS) -o su.o su.s
+$(O)/rt.o: rt.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ rt.s
+
+$(O)/su.o: su.s | $(OBJDIR)
+	$(AS) $(AFLAGS) -o $@ su.s
 
 xg0.int: iclib.i blib.i xg.i
-	cat iclib.i blib.i xg.i >xg0.int
+		cat iclib.i blib.i xg.i >xg0.int
 
-xg.i: icint st0.int cg0.int LIBHDR xg.b
-	./icint st0.int <xg.b
-	./icint cg0.int <OCODE
-	mv INTCODE xg.i
+xg.i: $(B)/icint st0.int cg0.int LIBHDR xg.b
+	$(B)/icint st0.int <xg.b
+	$(B)/icint cg0.int <OCODE
+		mv INTCODE xg.i
 
 cg0.int: iclib.i blib.i cg.i
-	cat iclib.i blib.i cg.i >cg0.int
+			cat iclib.i blib.i cg.i >cg0.int
 
 st0.int: iclib.i blib.i syn.i trn.i
-	cat iclib.i blib.i syn.i trn.i >st0.int
+			cat iclib.i blib.i syn.i trn.i >st0.int
 
-icint: icint.o blib.o
-	$(CC) $(CFLAGS) -o icint icint.o blib.o
+	$(B)/icint: $(O)/icint.o $(O)/blib.o | $(BINDIR)
+	$(CC) $(CFLAGS) -o $@ $(O)/icint.o $(O)/blib.o
 
-blib.o: blib.h blib.c
-	$(CC) $(CFLAGS) -c blib.c
+	$(O)/blib.o: blib.c blib.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -c blib.c -o $@
 
-icint.o: blib.h icint.c
-	$(CC) $(CFLAGS) -c icint.c
+	$(O)/icint.o: icint.c blib.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -c icint.c -o $@
 
-install: bcpl icint st cg xg LIBHDR iclib.i blib.i rules su.o rt.o sys.o
-	mkdir -p $(PREFIX)/bin $(PREFIX)/lib/bcplkit
-	install -c  -m 755 bcpl	     $(PREFIX)/bin
-	install -cs -m 555 icint     $(PREFIX)/bin
-	install -cs -m 555 st	     $(PREFIX)/lib/bcplkit
-	install -cs -m 555 cg	     $(PREFIX)/lib/bcplkit
-	install -cs -m 555 xg	     $(PREFIX)/lib/bcplkit
-	install -c  -m 644 LIBHDR    $(PREFIX)/lib/bcplkit
-	install -c  -m 444 iclib.i   $(PREFIX)/lib/bcplkit
-	install -c  -m 444 blib.i    $(PREFIX)/lib/bcplkit
-	install -c  -m 644 rules     $(PREFIX)/lib/bcplkit
-	install -c  -m 444 su.o	     $(PREFIX)/lib/bcplkit
-	install -c  -m 444 rt.o	     $(PREFIX)/lib/bcplkit
-	install -c  -m 444 sys.o     $(PREFIX)/lib/bcplkit
+		install: bcpl icint st cg xg LIBHDR iclib.i blib.i rules $(O)/su.o $(O)/rt.o $(O)/sys.o
+		mkdir -p $(PREFIX)/bin $(PREFIX)/lib/bcplkit
+		install -c  -m 755 bcpl      $(PREFIX)/bin
+		install -cs -m 555 $(B)/icint     $(PREFIX)/bin
+			install -cs -m 555 $(B)/st        $(PREFIX)/lib/bcplkit
+		install -cs -m 555 $(B)/cg        $(PREFIX)/lib/bcplkit
+		install -cs -m 555 $(B)/xg        $(PREFIX)/lib/bcplkit
+		install -c  -m 644 LIBHDR    $(PREFIX)/lib/bcplkit
+		install -c  -m 444 iclib.i   $(PREFIX)/lib/bcplkit
+		install -c  -m 444 blib.i    $(PREFIX)/lib/bcplkit
+		install -c  -m 644 rules     $(PREFIX)/lib/bcplkit
+			install -c  -m 444 $(O)/su.o      $(PREFIX)/lib/bcplkit
+		install -c  -m 444 $(O)/rt.o      $(PREFIX)/lib/bcplkit
+		install -c  -m 444 $(O)/sys.o     $(PREFIX)/lib/bcplkit
 
 clean:
-	rm -f OCODE INTCODE ASM
-	rm -f icint.o blib.o icint
-	rm -f st0.int cg0.int xg.i xg0.int
-	rm -f su.o rt.o sys.o
-	rm -f st0.s st0.o st0
-	rm -f cg0.s cg0.o cg0
-	rm -f xg0.s xg0.o xg0
-	rm -f st1.int cg1.int xg1.int
-	rm -f st1.s st1.o st1
-	rm -f cg1.s cg1.o cg1
-	rm -f xg1.s xg1.o xg1
-	rm -f st.int cg.int xg.int
-	rm -f st.s st.o st
-	rm -f cg.s cg.o cg
-	rm -f xg.s xg.o xg
+		rm -f OCODE INTCODE ASM
+		rm -f st0.int cg0.int xg.i xg0.int
+		rm -f st1.int cg1.int xg1.int
+		rm -f st.int cg.int xg.int
+		rm -f st0.s cg0.s xg0.s st1.s cg1.s xg1.s st.s cg.s xg.s
+			rm -rf $(OBJDIR)
