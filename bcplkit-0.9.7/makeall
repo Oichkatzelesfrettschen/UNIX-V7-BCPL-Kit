@@ -16,32 +16,36 @@ if test -z "$1"; then
 fi
 
 # Configure
-if test -e src/sys.s; then
-    :
-else
-    os=`uname`
-    arch=`uname -m`
-    case "${os}" in
-    FreeBSD)
-        sys="sys_freebsd.s" ;;
-    Linux)
-        if [ "${arch}" = "x86_64" ]; then
-            sys="sys_linux64.s"
-        else
-            sys="sys_linux.s"
-        fi
-        ;;
-    *)
-        echo "${os}: Not supported" 1>&2
-        exit 2
-    esac
-    ln -s ${sys} src/sys.s
-    echo "Configured for ${os}"
+os=`uname`
+arch=`uname -m`
+case "${os}" in
+FreeBSD)
+    sys="sys_freebsd.s" ;;
+Linux)
+    if [ "${arch}" = "x86_64" ]; then
+        sys="sys_linux64.s"
+        bits=64
+    else
+        sys="sys_linux.s"
+        bits=32
+    fi
+    ;;
+*)
+    echo "${os}: Not supported" 1>&2
+    exit 2
+esac
+rm -f src/sys.s
+ln -s ${sys} src/sys.s
+echo "Configured for ${os}"
+
+if [ -z "$bits" ]; then
+    [ "${arch}" = "x86_64" ] && bits=64 || bits=32
 fi
+export BUILD_BITS=${bits}
 
 # Make
 for dir in ${DIRS}
 do
     echo "===== ${dir} ====="
-    (cd ${dir} && ${MAKE} ${target})
+    (cd ${dir} && BUILD_BITS=${bits} ${MAKE} ${target})
 done
