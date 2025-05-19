@@ -21,14 +21,20 @@ on a supported platform), try
 
     ./makeall
 
+The build defaults to the host bitness.  To force a 32- or 64-bit
+build pass the `BITS` variable, for example
+
+    BITS=64 ./makeall
+
 followed by (as root)
 
     ./makeall install
 
-Otherwise, change to the "src" directory.  The "makeall" script will
-create or replace the "sys.s" link as needed.  It should point to
-"sys_linux64.s" on 64-bit Linux systems, or to "sys_linux.s" or
-"sys_freebsd.s" as appropriate for your system.  Enter
+Otherwise, change to the "src" directory.  The "makeall" script
+creates or replaces the `sys.s` link.  FreeBSD builds link to
+`sys_freebsd.s`.  Linux builds link to either `sys_linux.s` or
+`sys_linux64.s` depending on the `BITS` setting (the host bitness is
+used if `BITS` is not specified).  Enter
 
     make
 

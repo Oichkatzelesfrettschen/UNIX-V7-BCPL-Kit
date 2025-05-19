@@ -4,7 +4,13 @@
 
 GET "LIBHDR"
 
-MANIFEST $( WORDSZ=4; GSZ=500; LSZ=500 $)
+MANIFEST $(
+    WORDSZ=4; GSZ=500; LSZ=500;
+    // register numbers
+    RAX=0; RCX=1; RDX=2; RBX=3; RSP=4; RBP=5; RSI=6; RDI=7;
+    // log2 of word size used for shifts
+    SHIFT = WORDSZ=8 -> 3, 2
+$)
 
 // Type values (N=number, P=local, G=global, L=static, R=register)
 // at up to two levels of indirection
@@ -150,7 +156,7 @@ $(  STATIC $(
     CASE 'C':
         SECT := 1
         DATA(".byte @A", A, 0)
-        UNLESS F1='C' EMIT(".align 4,0")
+        UNLESS F1='C' EMIT(".align @N,0", 0, T.N, WORDSZ, FALSE)
         SECT := 0
         ENDCASE
     CASE 'L':
@@ -169,18 +175,18 @@ $(  STATIC $(
         UNLESS T=T.LL ERROR(6)
         X := A0
         UNLESS F0='X' & 10<=X<=15 $(
-            EMIT("testl %eax,%eax")
+            EMIT("test@S @0,@0")
             X := 11
         $)
         CODE((X - 10) NEQV (F='F' -> 1, 0), A, T)
         ENDCASE
     CASE 'K':
         UNLESS T=T.N ERROR(7)
-        EMIT("movl %ebp,%ecx")
-        EMIT("addl @A,%ebp", A << 2, T.N, 0, FALSE);
-        EMIT("movl %ecx,(%ebp)")
-        EMIT("movl $1f,4(%ebp)")
-        EMIT("jmp **%eax")
+        EMIT("mov@S @5,@1")
+        EMIT("add@S @A,@5", A << SHIFT, T.N, 0, FALSE)
+        EMIT("mov@S @1,(@5)")
+        EMIT("mov@S $1f,@N(@5)", 0, T.N, WORDSZ, FALSE)
+        EMIT("jmp **@0")
         EMIT("1:")
         ENDCASE
     CASE 'X':
@@ -285,11 +291,11 @@ $(  STATIC $(
             EMIT("jmp stop")
             ENDCASE
         CASE 31:
-            EMIT("movl (%ebp),%eax")
-            ENDCASE
-        CASE 32:
-            EMIT("movl %ecx,%ebp")
-            EMIT("jmp **%eax")
+            EMIT("mov@S (@5),@0")
+        ENDCASE
+    CASE 32:
+            EMIT("mov@S @1,@5")
+            EMIT("jmp **@0")
             ENDCASE
         CASE 33:
             EMIT("call endread")
@@ -345,7 +351,7 @@ $)
 AND EPILOG() BE
 $(  SECT := 1
     EMIT(".global G")
-    EMIT(".align 4")
+    EMIT(".align @N", 0, T.N, WORDSZ, FALSE)
     EMIT("G:")
     FOR I = 0 TO GSZ-1
         EMIT(".long @A # @N", G!I, G!I -> T.LL, T.N, I, 1)
@@ -364,19 +370,19 @@ AND ASTR(X) = VALOF
     CASE A.JG:  RESULTIS "jg @A"
     CASE A.JLE: RESULTIS "jle @A"
     CASE A.JMP: RESULTIS "jmp @A"
-    CASE A.MUL: RESULTIS "imull @A"
-    CASE A.DIV: RESULTIS "idivl @A"
-    CASE A.MOV: RESULTIS "movl @A,@R"
-    CASE A.ADD: RESULTIS "addl @A,@R"
-    CASE A.SUB: RESULTIS "subl @A,@R"
-    CASE A.CMP: RESULTIS "cmpl @A,@R"
-    CASE A.SHL: RESULTIS "shll @A,@R"
-    CASE A.SHR: RESULTIS "shrl @A,@R"
-    CASE A.AND: RESULTIS "andl @A,@R"
-    CASE A.OR:  RESULTIS "orl @A,@R"
-    CASE A.XOR: RESULTIS "xorl @A,@R"
-    CASE A.MV2: RESULTIS "movl @R,@A"
-    CASE A.LEA: RESULTIS "leal @A,@R"
+    CASE A.MUL: RESULTIS "imul@S @A"
+    CASE A.DIV: RESULTIS "idiv@S @A"
+    CASE A.MOV: RESULTIS "mov@S @A,@R"
+    CASE A.ADD: RESULTIS "add@S @A,@R"
+    CASE A.SUB: RESULTIS "sub@S @A,@R"
+    CASE A.CMP: RESULTIS "cmp@S @A,@R"
+    CASE A.SHL: RESULTIS "shl@S @A,@R"
+    CASE A.SHR: RESULTIS "shr@S @A,@R"
+    CASE A.AND: RESULTIS "and@S @A,@R"
+    CASE A.OR:  RESULTIS "or@S @A,@R"
+    CASE A.XOR: RESULTIS "xor@S @A,@R"
+    CASE A.MV2: RESULTIS "mov@S @R,@A"
+    CASE A.LEA: RESULTIS "lea@S @A,@R"
     CASE A.SL2: RESULTIS "shll %cl,@R"
     CASE A.SR2: RESULTIS "shrl %cl,@R"
     CASE A.SNE: RESULTIS "setne %al"
@@ -394,14 +400,16 @@ $(  STATIC $( PSECT=0 $)
         WRITES(SECT=0 -> ".text", ".data"); WRCH('*N')
         PSECT := SECT $)
     IF LN $(
-        WRITES(".align 4*N")
+        WRITES(".align ")
+        WRN(WORDSZ)
         FOR I = 0 TO LN - 1 $( WRCH('L'); WRN(L!I); WRITES(":*N") $)
         LN := 0 $)
     FOR I = 1 TO GETBYTE(S, 0) $(
         LET C = GETBYTE(S, I)
         TEST C='@' $(
             I := I + 1
-            SWITCHON GETBYTE(S, I) INTO $(
+            LET D = GETBYTE(S, I)
+            SWITCHON D INTO $(
             CASE 'A':
                 TEST NOT J & (T=T.N | T=T.LL) WRCH('$')
                 OR IF J & T>=T.R WRCH('**')
@@ -412,16 +420,48 @@ $(  STATIC $( PSECT=0 $)
                 ENDCASE
             CASE 'R':
                 ARGOUT(X, T.R)
+                ENDCASE
+            CASE 'S':
+                WRITES(WORDSZ=8 -> "q", "l")
+                ENDCASE
+            DEFAULT:
+                IF '0'<=D<='9' $( WRREG(D - '0') $) OR $( WRCH('@'); WRCH(D) $)
             $)
          $) OR WRCH(C)
     $)
     WRCH('*N')
 $)
 
+AND WRREG(R) BE
+$(  IF WORDSZ=8 $(
+        SWITCHON R INTO $(
+            CASE RAX: WRITES("%rax")
+            CASE RCX: WRITES("%rcx")
+            CASE RDX: WRITES("%rdx")
+            CASE RBX: WRITES("%rbx")
+            CASE RSP: WRITES("%rsp")
+            CASE RBP: WRITES("%rbp")
+            CASE RSI: WRITES("%rsi")
+            CASE RDI: WRITES("%rdi")
+        $)
+    $) OR $(
+        SWITCHON R INTO $(
+            CASE RAX: WRITES("%eax")
+            CASE RCX: WRITES("%ecx")
+            CASE RDX: WRITES("%edx")
+            CASE RBX: WRITES("%ebx")
+            CASE RSP: WRITES("%esp")
+            CASE RBP: WRITES("%ebp")
+            CASE RSI: WRITES("%esi")
+            CASE RDI: WRITES("%edi")
+        $)
+    $)
+$)
+
 AND ARGOUT(A, T) BE
 $(  TEST T=T.R | T=T.IR $(
         IF T=T.IR WRITES("(,")
-        WRITES(A=0 -> "%eax", "%ecx")
+        WRREG(A)
         IF T=T.IR WRITES(",4)")
     $) OR $(
         LET K, E = T & 3, K=T.LP | K=T.LG

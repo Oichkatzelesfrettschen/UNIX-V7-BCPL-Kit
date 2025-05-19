@@ -6,94 +6,56 @@ cd "$(dirname "$0")"
 DIRS="src doc"
 MAKE=make
 
-usage()
-{
+usage() {
     echo "usage: makeall [all|clean|install|test|bootstrap]" 1>&2
     exit 2
 }
 
-# Initialize
-if test $# -gt 1; then
+if [ $# -gt 1 ]; then
     usage
 fi
-target=$1
-if test -z "$1"; then
-    target="all"
-fi
 
+target=${1:-all}
 case "$target" in
     all|clean|install) maketarget="$target" ;;
     test|bootstrap) maketarget="all" ;;
     *) usage ;;
 esac
 
-# Configure
-
 os=`uname`
 arch=`uname -m`
-case "${os}" in
-FreeBSD)
-    sys="sys_freebsd.s" ;;
-Linux)
-    if [ "${arch}" = "x86_64" ]; then
-        sys="sys_linux64.s"
-        bits=64
-    else
-        sys="sys_linux.s"
-        bits=32
-    fi
-    ;;
-*)
-    echo "${os}: Not supported" 1>&2
-    exit 2
-esac
-rm -f src/sys.s
-ln -s ${sys} src/sys.s
-echo "Configured for ${os}"
 
+bits=${BITS}
 if [ -z "$bits" ]; then
-    [ "${arch}" = "x86_64" ] && bits=64 || bits=32
-# Replace an existing regular file with the correct symbolic link
-if [ -e src/sys.s ] && [ ! -h src/sys.s ]; then
-    echo "Replacing stale sys.s"
-    rm -f src/sys.s
+    [ "$arch" = "x86_64" ] && bits=64 || bits=32
 fi
-if test -e src/sys.s; then
-    :
-else
-    os=`uname`
-    arch=`uname -m`
-    case "${os}" in
-    FreeBSD)
-        sys="sys_freebsd.s" ;;
+
+case "$os" in
+    FreeBSD) sys="sys_freebsd.s" ;;
     Linux)
-        if [ "${arch}" = "x86_64" ]; then
+        if [ "$bits" = 64 ]; then
             sys="sys_linux64.s"
         else
             sys="sys_linux.s"
-        fi
-        ;;
+        fi ;;
     *)
-        echo "${os}: Not supported" 1>&2
-        exit 2
-    esac
-    ln -s ${sys} src/sys.s
-    echo "Configured for ${os}"
+        echo "$os: Not supported" 1>&2
+        exit 2 ;;
+esac
+
+if [ -e src/sys.s ] && [ ! -h src/sys.s ]; then
+    rm -f src/sys.s
 fi
-export BUILD_BITS=${bits}
+ln -sf ${sys} src/sys.s
+echo "Configured for $os (${bits}-bit)"
 
-# Make
-for dir in ${DIRS}
-do
+export BITS=$bits
 
-    (cd ${dir} && ${MAKE} ${maketarget})
-
-    (cd ${dir} && BUILD_BITS=${bits} ${MAKE} ${target})
-
+for dir in ${DIRS}; do
+    (cd ${dir} && ${MAKE} ${maketarget} BITS=$bits)
 done
 
 if [ "$target" = "test" ]; then
-
     (cd util && ${MAKE} BCPL=../src/bcpl cmpltest)
     (cd util && ./cmpltest > cmpltest.out)
     grep -q '0 FAILURE(S)' util/cmpltest.out || {
@@ -108,7 +70,7 @@ if [ "$target" = "bootstrap" ]; then
         cp src/$f $tmp/$f
     done
     (cd src && ${MAKE} clean)
-    (cd src && ${MAKE})
+    (cd src && ${MAKE} BITS=$bits)
     for f in st cg xg; do
         cmp $tmp/$f src/$f >/dev/null || {
             echo "$f differs after rebuild" 1>&2
@@ -117,3 +79,4 @@ if [ "$target" = "bootstrap" ]; then
     done
     rm -rf $tmp
 fi
+

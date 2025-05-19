@@ -7,12 +7,25 @@ This repository originally targets 32-bit x86 systems.  The
 variants and therefore additional work may be required for a
 fully‑functional 64‑bit environment.
 
+
 ### Building for 32‑ or 64‑bit
 
 Running `makeall` selects an interface file based on the host and then
 invokes `make` in each subdirectory.  It sets the `BUILD_BITS`
 environment variable which the Makefile uses to choose appropriate
 compiler and linker flags.  For example,
+
+To build the experimental 64-bit version set `BITS=64` when invoking
+`makeall` or `make`:
+
+1. `BITS=64 ./makeall`
+2. Or from within the `src` directory run `make BITS=64` once the link
+   is in place.
+
+The build system links `src/sys.s` to `sys_linux64.s` when `BITS=64`
+and to `sys_linux.s` otherwise (the default follows the host
+architecture).
+
 
 ```sh
 ./makeall            # build for the host (32‑bit default on x86‑64)
