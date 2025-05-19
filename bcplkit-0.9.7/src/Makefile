@@ -2,8 +2,13 @@
 
 PREFIX?=/usr/local
 
-AFLAGS=--64
-LDFLAGS=-m elf_x86_64
+# toolchain configuration (defaults may be overridden)
+AS ?= as
+LD ?= ld
+CC ?= cc
+AFLAGS ?= --32
+CFLAGS ?= -m32
+LDFLAGS ?= -m elf_i386
 
 all: st cg xg
 

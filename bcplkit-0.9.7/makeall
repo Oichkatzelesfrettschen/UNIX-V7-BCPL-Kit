@@ -1,19 +1,31 @@
 #!/bin/sh -e
 
 # Make script for bcplkit
+cd "$(dirname "$0")"
 
 DIRS="src doc"
 MAKE=make
 
+usage()
+{
+    echo "usage: makeall [all|clean|install|test|bootstrap]" 1>&2
+    exit 2
+}
+
 # Initialize
 if test $# -gt 1; then
-    echo "usage: makeall [target]" 1>&2
-    exit 2
+    usage
 fi
 target=$1
 if test -z "$1"; then
     target="all"
 fi
+
+case "$target" in
+    all|clean|install) maketarget="$target" ;;
+    test|bootstrap) maketarget="all" ;;
+    *) usage ;;
+esac
 
 # Configure
 if test -e src/sys.s; then
@@ -43,5 +55,31 @@ fi
 for dir in ${DIRS}
 do
     echo "===== ${dir} ====="
-    (cd ${dir} && ${MAKE} ${target})
+    (cd ${dir} && ${MAKE} ${maketarget})
 done
+
+if [ "$target" = "test" ]; then
+    echo "===== util ====="
+    (cd util && ${MAKE} BCPL=../src/bcpl cmpltest)
+    (cd util && ./cmpltest > cmpltest.out)
+    grep -q '0 FAILURE(S)' util/cmpltest.out || {
+        echo "cmpltest failed" 1>&2
+        exit 1
+    }
+fi
+
+if [ "$target" = "bootstrap" ]; then
+    tmp=`mktemp -d`
+    for f in st cg xg; do
+        cp src/$f $tmp/$f
+    done
+    (cd src && ${MAKE} clean)
+    (cd src && ${MAKE})
+    for f in st cg xg; do
+        cmp $tmp/$f src/$f >/dev/null || {
+            echo "$f differs after rebuild" 1>&2
+            exit 1
+        }
+    done
+    rm -rf $tmp
+fi

@@ -10,7 +10,7 @@ usage()
     exit 2
 }
 
-d=/usr/local/lib/bcplkit
+d=${BCPLKITDIR:-/usr/local/lib/bcplkit}
 
 oflag=0
 args=`getopt Oo: $*`
