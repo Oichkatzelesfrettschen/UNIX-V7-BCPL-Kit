@@ -4,6 +4,8 @@
 
 // BCPL compiler runtime
 
+                .include "sys_defs.inc"
+
 		.set IFLAGS,0
 		.set MODE,0666
 
@@ -30,228 +32,228 @@
                 .global rtinit
 rtinit:         push $FCBCNT*BUFSIZ
                 call sbrk
-                pop %ecx
+                pop RC
 
-                mov $ft,%ebx
-                mov $FCBCNT,%ecx
-rtinit.1:       mov %eax,(%ebx)
-                add $BUFSIZ,%eax
-                add $FCBSIZ,%ebx
+                mov $ft,RB
+                mov $FCBCNT,RC
+rtinit.1:       mov RA,(RB)
+                add $BUFSIZ,RA
+                add $FCBSIZ,RB
                 loop rtinit.1
 
-                mov $ft,%ebx
-                mov $FD.STDIN,%eax
+                mov $ft,RB
+                mov $FD.STDIN,RA
                 mov $FL.RD,%dl
                 call fopen
 
-                mov $ft+FCBSIZ,%ebx
-                mov $FD.STDOUT,%eax
+                mov $ft+FCBSIZ,RB
+                mov $FD.STDOUT,RA
                 mov $FL.WR,%dl
                 call fopen
                 ret 
 
                 .global rtexit
-rtexit:         mov $ft,%ebx
-                mov $FCBCNT,%ecx
-rtexit.1:       cmpb $0,FCB.FL(%ebx)
+rtexit:         mov $ft,RB
+                mov $FCBCNT,RC
+rtexit.1:       cmpb $0,FCB.FL(RB)
                 je rtexit.2
-                push %ecx
+                push RC
                 call fclose
-                pop %ecx
-rtexit.2:       add $FCBSIZ,%ebx
+                pop RC
+rtexit.2:       add $FCBSIZ,RB
                 loop rtexit.1
                 ret 
 
                 .global findinput
-findinput:      mov $IFLAGS,%edx
+findinput:      mov $IFLAGS,RD
                 jmp findio
 
                 .global findoutput
-findoutput:     mov oflags,%edx
+findoutput:     mov oflags,RD
 
-findio:         push %ebx
-                push %esi
-                push %edi
-                mov $ft,%ebx
-                mov $FCBCNT,%ecx
-findio.1:       cmpb $0,FCB.FL(%ebx)
+findio:         push RB
+                push RSI
+                push RDI
+                mov $ft,RB
+                mov $FCBCNT,RC
+findio.1:       cmpb $0,FCB.FL(RB)
                 je findio.3
-                add $FCBSIZ,%ebx
+                add $FCBSIZ,RB
                 loop findio.1
-findio.2:       xor %eax,%eax
+findio.2:       xor RA,RA
                 jmp findio.5
-findio.3:       shl $2,%eax
-                mov %eax,%esi
-                sub $STRSIZ,%esp
-                mov %esp,%edi
+findio.3:       shl $2,RA
+                mov RA,RSI
+                sub $STRSIZ,RSP
+                mov RSP,RDI
                 push $MODE
-                push %edx
-                push %edi
+                push RD
+                push RDI
                 lodsb
-                xor %ecx,%ecx
+                xor RC,RC
                 mov %al,%cl
                 rep movsb
-                mov %cl,(%edi)
+                mov %cl,(RDI)
                 call open
-                lea 12+STRSIZ(%esp),%esp
+                lea 12+STRSIZ(RSP),RSP
                 jb findio.2
 
-                cmp $IFLAGS,%edx
+                cmp $IFLAGS,RD
                 mov $FL.RD,%dl
                 je findio.4
                 mov $FL.WR,%dl
 findio.4:       call fopen
 
-                mov %ebx,%eax
-findio.5:       pop %edi
-                pop %esi
-                pop %ebx
+                mov RB,RA
+findio.5:       pop RDI
+                pop RSI
+                pop RB
                 ret 
 
-fopen:          mov %eax,FCB.FD(%ebx)
-                mov FCB.BF(%ebx),%eax
-                mov %eax,FCB.CP(%ebx)
-                mov %eax,FCB.XP(%ebx)
-                mov %dl,FCB.FL(%ebx)
+fopen:          mov RA,FCB.FD(RB)
+                mov FCB.BF(RB),RA
+                mov RA,FCB.CP(RB)
+                mov RA,FCB.XP(RB)
+                mov %dl,FCB.FL(RB)
                 cmp $FL.RD,%dl
                 je fopen.1
-                push FCB.FD(%ebx)
+                push FCB.FD(RB)
                 call isatty
-                pop %ecx
-                test %eax,%eax
+                pop RC
+                test RA,RA
                 jnz fopen.1
-                addl $BUFSIZ,FCB.XP(%ebx)
+                addl $BUFSIZ,FCB.XP(RB)
 fopen.1:        ret
 
                 .global wrch
-wrch:           push %ebx
-                mov cos,%ebx
-                mov FCB.CP(%ebx),%ecx
-                mov %al,(%ecx)
-                inc %ecx
-                mov %ecx,FCB.CP(%ebx)
-                cmp FCB.XP(%ebx),%ecx
+wrch:           push RB
+                mov cos,RB
+                mov FCB.CP(RB),RC
+                mov %al,(RC)
+                inc RC
+                mov RC,FCB.CP(RB)
+                cmp FCB.XP(RB),RC
                 jb wrch.2
-                testb $FL.BF,FCB.FL(%ebx)
+                testb $FL.BF,FCB.FL(RB)
                 jne wrch.1
-                sub FCB.BF(%ebx),%ecx
-                cmp $BUFSIZ,%ecx
+                sub FCB.BF(RB),RC
+                cmp $BUFSIZ,RC
                 je wrch.1
                 cmp $0xa,%al
                 jne wrch.2
 wrch.1:         call flush
-wrch.2:         pop %ebx
+wrch.2:         pop RB
                 ret 
 
-flush:          mov FCB.CP(%ebx),%ecx
-                mov FCB.BF(%ebx),%edx
-                mov %edx,FCB.CP(%ebx)
-                sub %edx,%ecx
+flush:          mov FCB.CP(RB),RC
+                mov FCB.BF(RB),RD
+                mov RD,FCB.CP(RB)
+                sub RD,RC
                 je flush.2
-flush.1:        push %ecx
-                push %edx
-                push FCB.FD(%ebx)
+flush.1:        push RC
+                push RD
+                push FCB.FD(RB)
                 call write
-                lea 12(%esp,1),%esp
+                lea 12(RSP,1),RSP
                 jb ferr
-                add %eax,%edx
-                sub %eax,%ecx
+                add RA,RD
+                sub RA,RC
                 jne flush.1
-flush.2:        xor %eax,%eax
+flush.2:        xor RA,RA
                 ret 
 
-ferr:           orb $FL.ERR,FCB.FL(%ebx)
+ferr:           orb $FL.ERR,FCB.FL(RB)
                 ret 
 
-fclose:         testb $FL.WR,FCB.FL(%ebx)
+fclose:         testb $FL.WR,FCB.FL(RB)
                 jz fclose.1
                 call flush
-fclose.1:       push FCB.FD(%ebx)
+fclose.1:       push FCB.FD(RB)
                 call close
-                pop %ecx
-                movb $0,FCB.FL(%ebx)
+                pop RC
+                movb $0,FCB.FL(RB)
                 ret
 
                 .global rdch
-rdch:           mov cis,%ebx
-                mov FCB.CP(%ebx),%ecx
-                cmp FCB.XP(%ebx),%ecx
+rdch:           mov cis,RB
+                mov FCB.CP(RB),RC
+                cmp FCB.XP(RB),RC
                 jb rdch.1
 
-                mov FCB.BF(%ebx),%ecx
-                mov %ecx,FCB.CP(%ebx)
-                mov %ecx,FCB.XP(%ebx)
+                mov FCB.BF(RB),RC
+                mov RC,FCB.CP(RB)
+                mov RC,FCB.XP(RB)
 
                 push $BUFSIZ
-                push %ecx
-                push FCB.FD(%ebx)
+                push RC
+                push FCB.FD(RB)
                 call read
-                lea 12(%esp,1),%esp
+                lea 12(RSP,1),RSP
                 jb ferr
-                test %eax,%eax
+                test RA,RA
                 je feof
-                add %eax,FCB.XP(%ebx)
+                add RA,FCB.XP(RB)
 
-rdch.1:         xor %eax,%eax
-                mov (%ecx),%al
-                inc %ecx
-                mov %ecx,FCB.CP(%ebx)
+rdch.1:         xor RA,RA
+                mov (RC),%al
+                inc RC
+                mov RC,FCB.CP(RB)
                 ret 
 
-feof:           orb $FL.EOF,FCB.FL(%ebx)
-                dec %eax
+feof:           orb $FL.EOF,FCB.FL(RB)
+                dec RA
                 ret 
 
                 .global unrdch
-unrdch:         mov cis,%edx
-                mov FCB.CP(%edx),%ecx
-                cmp FCB.BF(%edx),%ecx
+unrdch:         mov cis,RD
+                mov FCB.CP(RD),RC
+                cmp FCB.BF(RD),RC
                 je unrdch.1
-                dec %ecx
-                mov %ecx,FCB.CP(%edx)
+                dec RC
+                mov RC,FCB.CP(RD)
 unrdch.1:       ret
 
 /======================================================================
                 .global selectinput
-selectinput:    mov %eax,cis
+selectinput:    mov RA,cis
                 ret
 
                 .global selectoutput
-selectoutput:   mov %eax,cos
+selectoutput:   mov RA,cos
                 ret
 
                 .global input
-input:          mov cis,%eax
+input:          mov cis,RA
                 ret
 
                 .global output
-output:         mov cos,%eax
+output:         mov cos,RA
                 ret
 
                 .global endread
-endread:        mov cis,%ebx
+endread:        mov cis,RB
                 call fclose
-                xor %eax,%eax
-                mov %eax,cis
+                xor RA,RA
+                mov RA,cis
                 ret
 
                 .global endwrite
-endwrite:       mov cos,%ebx
+endwrite:       mov cos,RB
                 call fclose
-                xor %eax,%eax
-                mov %eax,cos
+                xor RA,RA
+                mov RA,cos
                 ret
 
                 .global rewind
-rewind:         mov cis,%ebx
-                xor %ecx,%ecx
-                push %ecx
-                push %ecx
-                push FCB.FD(%ebx)
+rewind:         mov cis,RB
+                xor RC,RC
+                push RC
+                push RC
+                push FCB.FD(RB)
                 call olseek
-                pop %eax
-                pop %ecx
-                pop %ecx
+                pop RA
+                pop RC
+                pop RC
                 mov $FL.RD,%dl
                 jmp fopen
 

@@ -16,6 +16,9 @@ BINDIR ?= $(OBJDIR)
 
 CFLAGS += -m$(ARCHBITS) -std=c23
 AFLAGS += --$(ARCHBITS)
+ifeq ($(ARCHBITS),64)
+AFLAGS += --defsym X86_64=1
+endif
 LDFLAGS += -m $(if $(filter 64,$(ARCHBITS)),elf_x86_64,elf_i386)
 
 O := $(OBJDIR)
