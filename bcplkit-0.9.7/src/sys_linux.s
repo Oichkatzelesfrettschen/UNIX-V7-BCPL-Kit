@@ -3,82 +3,84 @@
 // BCPL compiler runtime
 // System interface: Linux
 
+                .include "sys_defs.inc"
+
                 .global _exit
-_exit:          mov $1,%eax
+_exit:          mov $1,RA
                 jmp syscall
 
                 .global read
-read:           mov $3,%eax
+read:           mov $3,RA
                 jmp syscall
 
                 .global write
-write:          mov $4,%eax
+write:          mov $4,RA
                 jmp syscall
 
                 .global open
-open:           mov $5,%eax
+open:           mov $5,RA
                 jmp syscall
 
                 .global close
-close:          mov $6,%eax
+close:          mov $6,RA
                 jmp syscall
 
                 .global olseek
-olseek:         mov $0x13,%eax
+olseek:         mov $0x13,RA
                 jmp syscall
 
                 .global sbrk
-sbrk:           mov curbrk,%eax
-                test %eax,%eax
+sbrk:           mov curbrk,RA
+                test RA,RA
                 jnz 1f
                 call brk
-1:              push %eax
-                add 8(%esp),%eax
+1:              push RA
+                add 8(RSP),RA
                 call brk
-                pop %eax
+                pop RA
                 ret
 
-brk:            push %eax
-                mov $45,%eax
+brk:            push RA
+                mov $45,RA
                 call syscall
-                pop %ecx
-                mov %eax,curbrk
+                pop RC
+                mov RA,curbrk
                 ret
 
                 .global ioctl
-ioctl:          mov $0x36,%eax
+ioctl:          mov $0x36,RA
 
-syscall:        push %edx
-                push %ecx
-                push %ebx
-                mov 0x10(%esp),%ebx
-                mov 0x14(%esp),%ecx
-                mov 0x18(%esp),%edx
+syscall:        push RD
+                push RC
+                push RB
+                mov 0x10(RSP),RB
+                mov 0x14(RSP),RC
+                mov 0x18(RSP),RD
                 int $0x80
-                or %eax,%eax
+                or RA,RA
                 jge 1f
-                neg %eax
-                mov %eax,errno
-                mov $-1,%eax
+                neg RA
+                mov RA,errno
+                mov $-1,RA
                 stc
-1:              pop %ebx
-                pop %ecx
-                pop %edx
+1:              pop RB
+                pop RC
+                pop RD
                 ret
 
                 .set TERMIOSZ,0x40
                 .set TCGETS,0x5401
 
                 .global isatty
-isatty:         sub $TERMIOSZ,%esp
-                push %esp
+isatty:         sub $TERMIOSZ,RSP
+                push RSP
                 push $TCGETS
-                push 0xc+TERMIOSZ(%esp)
+                push 0xc+TERMIOSZ(RSP)
                 call ioctl
-                mov $0,%eax
+                mov $0,RA
                 jc isatty.1
-                inc %eax
-isatty.1:       add $0xc+TERMIOSZ,%esp
+                inc RA
+isatty.1:       add $0xc+TERMIOSZ,RSP
                 ret
 
                 .global oflags
