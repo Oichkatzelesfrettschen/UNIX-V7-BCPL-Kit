@@ -5,11 +5,14 @@
 #ifndef BLIB_H_
 #define BLIB_H_
 
-int getbyte(int, int);
-void putbyte(int, int, int);
+#include <stdint.h>
+
+/* INTCODE word access helpers */
+int32_t getbyte(intptr_t, intptr_t);
+void putbyte(intptr_t, intptr_t, int32_t);
 void initio(void);
-int findinput(int);
-int findoutput(int);
+int findinput(intptr_t);
+int findoutput(intptr_t);
 void selectinput(int);
 void selectoutput(int);
 int input(void);

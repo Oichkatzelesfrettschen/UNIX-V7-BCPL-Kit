@@ -4,31 +4,37 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <assert.h>
 #include "blib.h"
+
+typedef int32_t word_t;
+static_assert(sizeof(word_t) * CHAR_BIT == 32, "word size mismatch");
 
 #define FTSZ 20
 
-extern int *M;
+extern word_t *M;
 
 static FILE *ft[FTSZ];
 static int fi, fo;
 
-int
-getbyte(int s, int i)
+int32_t
+getbyte(intptr_t s, intptr_t i)
 {
-    int w = M[s + i / 4];
-    int m = (i % 4) ^ 3;
+    word_t w = M[s + i / 4];
+    intptr_t m = (i % 4) ^ 3;
     w = w >> (8 * m);
     return w & 255;
 }
 
 void
-putbyte(int s, int i, int ch)
+putbyte(intptr_t s, intptr_t i, int32_t ch)
 {
-    int p = s + i / 4;
-    int m = (i % 4) ^ 3;
-    int w = M[p];
-    int x = 0xff;
+    intptr_t p = s + i / 4;
+    intptr_t m = (i % 4) ^ 3;
+    word_t w = M[p];
+    word_t x = 0xff;
     x = x << (8 * m);
     x = x ^ 0xffffffff;
     w = w & x;
@@ -40,13 +46,13 @@ putbyte(int s, int i, int ch)
 }
 
 static char *
-cstr(int s)
+cstr(intptr_t s)
 {
     char *st;
-    int n, i;
+    intptr_t n, i;
 
     n = getbyte(s, 0);
-    st = malloc(n + 1);
+    st = malloc((size_t)n + 1);
     for (i = 1; i <= n; i++)
         st[i - 1] = getbyte(s, i);
     st[n] = 0;
@@ -75,7 +81,7 @@ initio(void)
 }
 
 int
-findinput(int s)
+findinput(intptr_t s)
 {
     char *st = cstr(s);
     int x;
@@ -91,7 +97,7 @@ findinput(int s)
 }
 
 int
-findoutput(int s)
+findoutput(intptr_t s)
 {
     char *st = cstr(s);
     int x;
