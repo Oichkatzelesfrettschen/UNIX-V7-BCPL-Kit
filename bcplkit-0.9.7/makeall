@@ -16,6 +16,11 @@ if test -z "$1"; then
 fi
 
 # Configure
+# Replace an existing regular file with the correct symbolic link
+if [ -e src/sys.s ] && [ ! -h src/sys.s ]; then
+    echo "Replacing stale sys.s"
+    rm -f src/sys.s
+fi
 if test -e src/sys.s; then
     :
 else
