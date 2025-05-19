@@ -1,6 +1,13 @@
 # BCPL kit build rules
 PREFIX?=/usr/local
 
+# toolchain configuration (defaults may be overridden)
+AS ?= as
+LD ?= ld
+CC ?= cc
+AFLAGS ?= --32
+CFLAGS ?= -m32
+LDFLAGS ?= -m elf_i386
 # Determine build architecture
 ARCHBITS ?= $(shell [ "$(BUILD_BITS)" ] && echo $(BUILD_BITS) || \
 ([ "`uname -m`" = "x86_64" ] && echo 64 || echo 32))
@@ -15,10 +22,7 @@ O := $(OBJDIR)
 B := $(BINDIR)
 $(OBJDIR):
 		mkdir -p $(OBJDIR)
-
-
 all: $(B)/st $(B)/cg $(B)/xg
-
 st: $(B)/st
 cg: $(B)/cg
 xg: $(B)/xg
