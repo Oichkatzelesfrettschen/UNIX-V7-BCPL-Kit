@@ -12,9 +12,17 @@ BITS ?= $(shell [ "`uname -m`" = "x86_64" ] && echo 64 || echo 32)
 OBJDIR ?= build/$(BITS)
 BINDIR ?= $(OBJDIR)
 
+
 CFLAGS += -m$(BITS) -std=c11 -DBITS$(BITS)
 AFLAGS += --$(BITS)
 LDFLAGS += -m $(if $(filter 64,$(BITS)),elf_x86_64,elf_i386)
+CFLAGS += -m$(ARCHBITS) -std=c23
+AFLAGS += --$(ARCHBITS)
+ifeq ($(ARCHBITS),64)
+AFLAGS += --defsym X86_64=1
+endif
+LDFLAGS += -m $(if $(filter 64,$(ARCHBITS)),elf_x86_64,elf_i386)
+
 
 O := $(OBJDIR)
 B := $(BINDIR)
