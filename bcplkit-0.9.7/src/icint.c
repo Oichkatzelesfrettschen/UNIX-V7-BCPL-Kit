@@ -32,6 +32,8 @@
 typedef int32_t word_t;
 static_assert(sizeof(word_t) * CHAR_BIT == WORDSIZE,
               "INTCODE word size mismatch");
+static_assert(sizeof(intptr_t) * CHAR_BIT >= WORDSIZE,
+              "intptr_t smaller than INTCODE word");
 
 word_t *M;
 FILE *fp;
@@ -49,15 +51,13 @@ static word_t D;
 static word_t W;
 
 static void assemble(void);
-static void stw(word_t);
-static void stc(word_t);
+static void stw(word_t w);
+static void stc(word_t c);
 static void rch(void);
 static word_t rdn(void);
-static void setlab(int);
-static void labref(int, word_t);
+static void setlab(int n);
+static void labref(int n, word_t a);
 static int interpret(void);
-static int icgetbyte(int, int);
-static void icputbyte(int, int, int);
 
 static void
 assemble(void)
