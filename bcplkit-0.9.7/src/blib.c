@@ -11,6 +11,8 @@
 
 typedef int32_t word_t;
 static_assert(sizeof(word_t) * CHAR_BIT == 32, "word size mismatch");
+static_assert(sizeof(intptr_t) * CHAR_BIT >= 32,
+              "intptr_t smaller than INTCODE word");
 
 #define FTSZ 20
 
