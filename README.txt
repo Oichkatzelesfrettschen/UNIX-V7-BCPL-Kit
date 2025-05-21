@@ -27,6 +27,19 @@ The script picks `sys_linux.s`, `sys_freebsd.s` or `sys_linux64.s` based
 on the host platform.  You can also create the `src/sys.s` link manually
 and run `make` inside the `src` directory.
 
+Self-hosting and tests
+---------------------
+
+After a successful build you can verify the compiler by running its test
+suite and then rebuilding the sources with the freshly built compiler.
+
+```sh
+./makeall test       # build and run util/cmpltest
+./makeall bootstrap  # recompile the compiler and compare binaries
+```
+
+Both targets exit with a non-zero status if a failure occurs.
+
 Missing components
 ------------------
 
