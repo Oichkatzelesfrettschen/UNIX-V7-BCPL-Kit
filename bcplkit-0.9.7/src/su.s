@@ -2,7 +2,7 @@
 
 // $Id: su.s,v 1.7 2004/12/18 17:51:16 rn Exp $
 
-                .include "sys_defs.inc"
+                .include "sys_defs.inc" // brings in register aliases
 
                 .set STACKBASE,54
                 .set STACKEND,55
@@ -25,12 +25,12 @@ _start:         cld
                 mov (RB),RSI
                 jmp start.3
 //
-start.1:        mov $' ',%al
+start.1:        mov $' ',AL
 start.2:        cmp RC,RDI
                 je start.4
                 stosb
 start.3:        lodsb
-                test %al,%al
+                test AL,AL
                 jnz start.2
                 add $8,RB
                 mov (RB),RSI

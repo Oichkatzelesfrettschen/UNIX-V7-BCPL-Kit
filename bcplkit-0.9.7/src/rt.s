@@ -3,6 +3,7 @@
 // $Id: rt.s,v 1.7 2004/12/21 13:52:18 rn Exp $
 
 // BCPL compiler runtime
+// Uses register aliases defined in regs.inc
 
                 .include "sys_defs.inc"
 

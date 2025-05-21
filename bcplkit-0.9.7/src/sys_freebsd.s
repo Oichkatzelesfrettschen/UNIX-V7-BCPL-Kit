@@ -2,6 +2,7 @@
 
 // BCPL compiler runtime
 // System interface: FreeBSD
+// Uses register aliases defined in regs.inc
 
                 .include "sys_defs.inc"
 
