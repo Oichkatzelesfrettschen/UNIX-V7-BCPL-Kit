@@ -193,27 +193,27 @@ $(  STATIC $(
         SWITCHON A INTO $(
         DEFAULT: ERROR(8)
         CASE 1:
-            EMIT("movl (,%eax,4),%eax")
+            EMIT("mov@S (,@0,@N),@0", 0, T.N, 1<<SHIFT, FALSE)
             ENDCASE
         CASE 2:
-            EMIT("negl %eax")
+            EMIT("neg@S @0")
             ENDCASE
         CASE 3:
-            EMIT("xorl $-1,%eax")
+            EMIT("xor@S $-1,@0")
             ENDCASE
         CASE 4:
-            EMIT("movl 4(%ebp),%ecx")
-            EMIT("movl (%ebp),%ebp")
-            EMIT("jmp **%ecx")
+            EMIT("mov@S @N(@5),@1", 0, T.N, WORDSZ, FALSE)
+            EMIT("mov@S (@5),@5")
+            EMIT("jmp **@1")
             ENDCASE
         CASE 5:
             CODE(A.MUL, A0, T0)
             ENDCASE
         CASE 6: CASE 7:
-            EMIT("cltd")
+            EMIT(WORDSZ=8 -> "cqto", "cltd")
             CODE(A.DIV, A0, T0)
             IF A=7
-                EMIT("movl %edx,%eax")
+                EMIT("mov@S @2,@0")
             ENDCASE
         CASE 8:
             CODE(A.ADD, A0, T0)
@@ -226,8 +226,8 @@ $(  STATIC $(
             IF F1='F' | F1='T'
                 ENDCASE
             EMIT(ASTR(A - 10 + A.SNE))
-            EMIT("movzbl %al,%eax")
-            EMIT("decl %eax")
+            EMIT(WORDSZ=8 -> "movzbq %al,%rax", "movzbl %al,%eax")
+            EMIT("dec@S @0")
             ENDCASE
         CASE 16:
             CODE(T0=T.N -> A.SHL, A.SL2, A0, T0)
@@ -245,26 +245,26 @@ $(  STATIC $(
             CODE(A.XOR, A0, T0)
             ENDCASE
         CASE 21:
-            EMIT("xorl $-1,%eax")
+            EMIT("xor@S $-1,@0")
             CODE(A.XOR, A0, T0)
             ENDCASE
         CASE 22:
             EMIT("jmp finish")
             ENDCASE
         CASE 23:
-            EMIT("movl @A,%esi", XL, T.LL, 0, FALSE)
-            EMIT("movl (%esi),%ecx")
-            EMIT("movl 4(%esi),%edx")
-            EMIT("jecxz 2f")
+            EMIT("mov@S @A,@6", XL, T.LL, 0, FALSE)
+            EMIT("mov@S (@6),@1")
+            EMIT("mov@S @N(@6),@2", 0, T.N, WORDSZ, FALSE)
+            EMIT(WORDSZ=8 -> "jrcxz 2f", "jecxz 2f")
             EMIT("1:")
-            EMIT("addl $8,%esi")
-            EMIT("cmpl (%esi),%eax")
+            EMIT("add@S $@N,@6", 0, T.N, WORDSZ*2, FALSE)
+            EMIT("cmp@S (@6),@0")
             EMIT("je 3f")
             EMIT("loop 1b")
             EMIT("2:")
-            EMIT("jmp **%edx")
+            EMIT("jmp **@2")
             EMIT("3:")
-            EMIT("jmp **4(%esi)")
+            EMIT("jmp **@N(@6)", 0, T.N, WORDSZ, FALSE)
             L!LN := XL
             LN := LN + 1
             XL := XL + 1
@@ -304,32 +304,32 @@ $(  STATIC $(
             EMIT("call endwrite")
             ENDCASE
         CASE 35:
-            EMIT("movl %ebp,%esi")
-            EMIT("movl %eax,%ebx")
-            EMIT("incl %ebx")
-            EMIT("shll $2,%ebx")
-            EMIT("addl %ebx,%esi")
-            EMIT("movl (%ebp),%ebx")
-            EMIT("movl %ebx,(%esi)")
-            EMIT("movl 4(%ebp),%ebx")
-            EMIT("movl %ebx,4(%esi)")
-            EMIT("movl %ebp,%ebx")
-            EMIT("shrl $2,%ebx")
-            EMIT("movl %ebx,8(%esi)")
-            EMIT("movl %eax,12(%esi)")
-            EMIT("movl %esi,%ebp")
-            EMIT("jmp **%ecx")
+            EMIT("mov@S @5,@6")
+            EMIT("mov@S @0,@3")
+            EMIT("inc@S @3")
+            EMIT("shl@S $@N,@3", 0, T.N, SHIFT, FALSE)
+            EMIT("add@S @3,@6")
+            EMIT("mov@S (@5),@3")
+            EMIT("mov@S @3,(@6)")
+            EMIT("mov@S @N(@5),@3", 0, T.N, WORDSZ, FALSE)
+            EMIT("mov@S @3,@N(@6)", 0, T.N, WORDSZ, FALSE)
+            EMIT("mov@S @5,@3")
+            EMIT("shr@S $@N,@3", 0, T.N, SHIFT, FALSE)
+            EMIT("mov@S @3,@N(@6)", 0, T.N, WORDSZ*2, FALSE)
+            EMIT("mov@S @0,@N(@6)", 0, T.N, WORDSZ*3, FALSE)
+            EMIT("mov@S @6,@5")
+            EMIT("jmp **@1")
             ENDCASE
         CASE 36:
-            EMIT("shll $2,%ecx")
-            EMIT("addl %eax,%ecx")
-            EMIT("movzbl (%ecx),%eax")
+            EMIT("shl@S $@N,@1", 0, T.N, SHIFT, FALSE)
+            EMIT("add@S @0,@1")
+            EMIT(WORDSZ=8 -> "movzbq (@1),%rax", "movzbl (@1),%eax")
             ENDCASE
         CASE 37:
-            EMIT("shll $2,%ecx")
-            EMIT("addl %eax,%ecx")
-            EMIT("movl 16(%ebp),%eax")
-            EMIT("movb %al,(%ecx)")
+            EMIT("shl@S $@N,@1", 0, T.N, SHIFT, FALSE)
+            EMIT("add@S @0,@1")
+            EMIT("mov@S @N(@5),@0", 0, T.N, WORDSZ*4, FALSE)
+            EMIT("movb %al,(@1)")
             ENDCASE
         CASE 38:
             EMIT("call input")
@@ -468,7 +468,7 @@ $(  TEST T=T.R | T=T.IR $(
         IF K=T.LL WRCH('L')
         IF E DO A := A * WORDSZ
         WRN(A)
-        IF E WRITES(K=T.LP -> "(%ebp)", "(%edi)")
+        IF E $( WRCH('('); WRREG(K=T.LP -> RBP, RDI); WRCH(')') $)
     $)
 $)
 
