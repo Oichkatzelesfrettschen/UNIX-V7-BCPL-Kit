@@ -7,13 +7,14 @@ LD ?= ld
 CC ?= cc
 
 # Select 32- or 64-bit build
-BITS ?= $(shell [ "`uname -m`" = "x86_64" ] && echo 64 || echo 32)
+BITS ?= $(shell case `uname -m` in *64*) echo 64 ;; *) echo 32 ;; esac)
 
-OBJDIR ?= build/$(BITS)
+OBJROOT ?= ../build
+OBJDIR ?= $(OBJROOT)/$(BITS)
 BINDIR ?= $(OBJDIR)
 
 
-CFLAGS += -m$(BITS) -std=c11 -DBITS$(BITS)
+CFLAGS += -m$(BITS) -std=c23 -DBITS$(BITS)
 AFLAGS += --$(BITS)
 
 ifeq ($(BITS),64)

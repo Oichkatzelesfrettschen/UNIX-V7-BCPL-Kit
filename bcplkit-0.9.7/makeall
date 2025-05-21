@@ -25,10 +25,12 @@ esac
 os=`uname`
 arch=`uname -m`
 
-bits=${BITS}
-if [ -z "$bits" ]; then
-    [ "$arch" = "x86_64" ] && bits=64 || bits=32
-fi
+case "$arch" in
+    *64*) hostbits=64 ;;
+    *)    hostbits=32 ;;
+esac
+
+bits=${BITS:-$hostbits}
 
 case "$os" in
     FreeBSD) sys="sys_freebsd.s" ;;
@@ -43,10 +45,9 @@ case "$os" in
         exit 2 ;;
 esac
 
-if [ -e src/sys.s ] && [ ! -h src/sys.s ]; then
-    rm -f src/sys.s
-fi
-ln -sf ${sys} src/sys.s
+mkdir -p build
+rm -f src/sys.s
+ln -s ${sys} src/sys.s
 echo "Configured for $os (${bits}-bit)"
 
 export BITS=$bits
