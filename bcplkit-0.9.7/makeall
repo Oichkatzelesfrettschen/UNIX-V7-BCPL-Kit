@@ -57,15 +57,18 @@ for dir in ${DIRS}; do
 done
 
 if [ "$target" = "test" ]; then
+    echo "Running compiler test suite..."
     (cd util && ${MAKE} BCPL=../src/bcpl cmpltest)
     (cd util && ./cmpltest > cmpltest.out)
     grep -q '0 FAILURE(S)' util/cmpltest.out || {
         echo "cmpltest failed" 1>&2
         exit 1
     }
+    echo "cmpltest passed"
 fi
 
 if [ "$target" = "bootstrap" ]; then
+    echo "Verifying self-hosted rebuild..."
     tmp=`mktemp -d`
     for f in st cg xg; do
         cp src/$f $tmp/$f
@@ -79,5 +82,6 @@ if [ "$target" = "bootstrap" ]; then
         }
     done
     rm -rf $tmp
+    echo "Bootstrap rebuild matches original binaries"
 fi
 
