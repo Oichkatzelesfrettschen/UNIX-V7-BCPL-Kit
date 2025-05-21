@@ -9,17 +9,21 @@ CC ?= cc
 # Select 32- or 64-bit build
 BITS ?= $(shell [ "`uname -m`" = "x86_64" ] && echo 64 || echo 32)
 
+ifeq ($(BITS),32)
+  AFLAGS += --32 --defsym BITS=32
+  LDEM := elf_i386
+else ifeq ($(BITS),64)
+  AFLAGS += --64 --defsym BITS=64 --defsym X86_64=1
+  LDEM := elf_x86_64
+else
+  $(error BITS must be 32 or 64)
+endif
+
 OBJDIR ?= build/$(BITS)
 BINDIR ?= $(OBJDIR)
 
-
-CFLAGS += -m$(BITS) -std=c11 -DBITS$(BITS)
-AFLAGS += --$(BITS)
-
-ifeq ($(BITS),64)
-AFLAGS += --defsym X86_64=1
-endif
-LDFLAGS += -m $(if $(filter 64,$(BITS)),elf_x86_64,elf_i386)
+CFLAGS += -m$(BITS) -std=c11 -DBITS=$(BITS) -DBITS$(BITS)
+LDFLAGS += -m $(LDEM)
 
 .DEFAULT_GOAL := all
 

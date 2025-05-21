@@ -7,7 +7,7 @@ DIRS="src doc"
 MAKE=make
 
 usage() {
-    echo "usage: makeall [all|clean|install|test|bootstrap]" 1>&2
+    echo "usage: BITS=32|64 makeall [all|clean|install|test|bootstrap]" 1>&2
     exit 2
 }
 
@@ -29,6 +29,12 @@ bits=${BITS}
 if [ -z "$bits" ]; then
     [ "$arch" = "x86_64" ] && bits=64 || bits=32
 fi
+case "$bits" in
+    32|64) ;;
+    *)
+        echo "BITS must be 32 or 64" 1>&2
+        exit 2 ;;
+esac
 
 case "$os" in
     FreeBSD) sys="sys_freebsd.s" ;;

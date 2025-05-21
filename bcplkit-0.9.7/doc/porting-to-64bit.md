@@ -11,9 +11,8 @@ fully‑functional 64‑bit environment.
 ### Building for 32‑ or 64‑bit
 
 Running `makeall` selects an interface file based on the host and then
-invokes `make` in each subdirectory.  It sets the `BUILD_BITS`
-environment variable which the Makefile uses to choose appropriate
-compiler and linker flags.  For example,
+invokes `make` in each subdirectory.  Set `BITS` to `32` or `64` to
+control the word size passed to the assembler and linker.  For example,
 
 To build the experimental 64-bit version set `BITS=64` when invoking
 `makeall` or `make`:
@@ -22,20 +21,20 @@ To build the experimental 64-bit version set `BITS=64` when invoking
 2. Or from within the `src` directory run `make BITS=64` once the link
    is in place.
 
-The build system links `src/sys.s` to `sys_linux64.s` when `BITS=64`
-and to `sys_linux.s` otherwise (the default follows the host
-architecture).
+The build system links `src/sys.s` to `sys_linux.s` for 32‑bit builds
+and to `sys_linux64.s` for 64‑bit (FreeBSD uses `sys_freebsd.s`).  The
+default follows the host architecture.
 
 
 ```sh
-./makeall            # build for the host (32‑bit default on x86‑64)
-BUILD_BITS=64 ./makeall   # force a 64‑bit build
-BUILD_BITS=32 ./makeall   # force a 32‑bit build
+./makeall          # build for the host (32‑bit default on x86‑64)
+BITS=64 ./makeall  # force a 64‑bit build
+BITS=32 ./makeall  # force a 32‑bit build
 ```
 
-`make` may also be run directly in `src` with `BUILD_BITS` set.  Object
-files are placed under `build/32` or `build/64` depending on the value of
-this variable.
+`make` may also be run directly in `src` with `BITS` set.  Object files are
+placed under `build/32` or `build/64` depending on the value of this
+variable.
 
 The helper file `src/sys.s` is a link to the appropriate system
 interface (`sys_linux.s`, `sys_linux64.s`, or `sys_freebsd.s`).
