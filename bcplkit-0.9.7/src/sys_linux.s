@@ -1,32 +1,34 @@
 // Copyright (c) 2004 Robert Nordier.  All rights reserved.
 
 // BCPL compiler runtime
-// System interface: Linux
+// System interface: Linux (i386)
+// Numbers from arch/x86/entry/syscalls/syscall_32.tbl
+// Uses the i386 int $0x80 calling convention
 
                 .include "sys_defs.inc"
 
                 .global _exit
-_exit:          mov $1,RA
+_exit:          mov $LINUX32_EXIT,RA
                 jmp syscall
 
                 .global read
-read:           mov $3,RA
+read:           mov $LINUX32_READ,RA
                 jmp syscall
 
                 .global write
-write:          mov $4,RA
+write:          mov $LINUX32_WRITE,RA
                 jmp syscall
 
                 .global open
-open:           mov $5,RA
+open:           mov $LINUX32_OPEN,RA
                 jmp syscall
 
                 .global close
-close:          mov $6,RA
+close:          mov $LINUX32_CLOSE,RA
                 jmp syscall
 
                 .global olseek
-olseek:         mov $0x13,RA
+olseek:         mov $LINUX32_LSEEK,RA
                 jmp syscall
 
                 .global sbrk
@@ -41,14 +43,14 @@ sbrk:           mov curbrk,RA
                 ret
 
 brk:            push RA
-                mov $45,RA
+                mov $LINUX32_BRK,RA
                 call syscall
                 pop RC
                 mov RA,curbrk
                 ret
 
                 .global ioctl
-ioctl:          mov $0x36,RA
+ioctl:          mov $LINUX32_IOCTL,RA
 
 syscall:        push RD
                 push RC
