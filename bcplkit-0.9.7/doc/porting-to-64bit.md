@@ -49,6 +49,11 @@ register name (`%eax`/`%rax`, `%ebx`/`%rbx`, and so on) according to the
 chosen word size.  These appear throughout `su.s` and the `sys_*` files
 and remove many hard coded register names.
 
+System call numbers are collected in `syscall_defs.inc`.  The values
+mirror those listed in the Linux `syscall_*.tbl` files and the FreeBSD
+`syscall.h` header.  Each `sys_*.s` file includes this header so the
+same symbolic names can be used for both 32‑bit and 64‑bit builds.
+
 ### Remaining 32‑bit assumptions
 
 The compiler and interpreter still define `WORDSIZE` as 32 and operate on

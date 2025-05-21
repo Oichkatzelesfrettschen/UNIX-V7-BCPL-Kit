@@ -1,40 +1,42 @@
 // Copyright (c) 2004 Robert Nordier.  All rights reserved.
 
 // BCPL compiler runtime
-// System interface: FreeBSD
+// System interface: FreeBSD (i386)
+// Numbers from sys/sys/syscall.h
+// Arguments are passed on the stack for int $0x80
 
                 .include "sys_defs.inc"
 
                 .global _exit
-_exit:          mov $1,RA
+_exit:          mov $FBSD32_EXIT,RA
                 int $0x80
 
                 .global read
-read:           mov $3,RA
+read:           mov $FBSD32_READ,RA
                 int $0x80
                 jc error
                 ret
 
                 .global write
-write:          mov $4,RA
+write:          mov $FBSD32_WRITE,RA
                 int $0x80
                 jc error
                 ret
 
                 .global open
-open:           mov $5,RA
+open:           mov $FBSD32_OPEN,RA
                 int $0x80
                 jc error
                 ret
 
                 .global close
-close:          mov $6,RA
+close:          mov $FBSD32_CLOSE,RA
                 int $0x80
                 jc error
                 ret
 
                 .global olseek
-olseek:         mov $0x13,RA
+olseek:         mov $FBSD32_LSEEK,RA
                 int $0x80
                 jc error
                 ret
@@ -43,7 +45,7 @@ olseek:         mov $0x13,RA
 sbrk:           mov 4(RSP),RC
                 mov curbrk,RA
                 add RA,4(RSP)
-                mov $17,RA
+                mov $FBSD32_BRK,RA
                 int $0x80
                 jc error
                 mov curbrk,RA
@@ -51,7 +53,7 @@ sbrk:           mov 4(RSP),RC
                 ret
 
                 .global ioctl
-ioctl:          mov $0x36,RA
+ioctl:          mov $FBSD32_IOCTL,RA
                 int $0x80
                 jc error
                 ret
