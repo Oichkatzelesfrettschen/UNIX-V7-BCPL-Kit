@@ -13,3 +13,13 @@ To build the experimental 64-bit version:
 
 Further testing and runtime adjustments are likely required before the
 compiler can fully operate in a native 64-bit environment.
+
+## System call interface notes
+
+Runtime assembly sources now include `sys_defs.inc`, which lists syscall
+numbers for Linux (i386 and x86-64) and FreeBSD along with register usage.
+These values were taken from the Linux syscall tables in the kernel source
+(`arch/x86/entry/syscalls/syscall_32.tbl` and `syscall_64.tbl`) and from the
+FreeBSD `sys/sys/syscall.h` header.  The 32‑bit routines continue to use the
+`int $0x80` calling convention, while the 64‑bit code follows the x86‑64
+`syscall` ABI with the `%rcx` argument copied to `%r10`.

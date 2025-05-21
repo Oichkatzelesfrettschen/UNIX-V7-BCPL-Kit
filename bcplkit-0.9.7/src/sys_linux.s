@@ -1,30 +1,33 @@
 // Copyright (c) 2004 Robert Nordier.  All rights reserved.
 
 // BCPL compiler runtime
-// System interface: Linux
+// System interface: Linux (i386)
+// Syscall numbers from Linux arch/x86/entry/syscalls/syscall_32.tbl
+
+                .include "sys_defs.inc"
 
                 .global _exit
-_exit:          mov $1,%eax
+_exit:          mov $SYS_EXIT_LINUX32,%eax
                 jmp syscall
 
                 .global read
-read:           mov $3,%eax
+read:           mov $SYS_READ_LINUX32,%eax
                 jmp syscall
 
                 .global write
-write:          mov $4,%eax
+write:          mov $SYS_WRITE_LINUX32,%eax
                 jmp syscall
 
                 .global open
-open:           mov $5,%eax
+open:           mov $SYS_OPEN_LINUX32,%eax
                 jmp syscall
 
                 .global close
-close:          mov $6,%eax
+close:          mov $SYS_CLOSE_LINUX32,%eax
                 jmp syscall
 
                 .global olseek
-olseek:         mov $0x13,%eax
+olseek:         mov $SYS_LSEEK_LINUX32,%eax
                 jmp syscall
 
                 .global sbrk
@@ -39,14 +42,14 @@ sbrk:           mov curbrk,%eax
                 ret
 
 brk:            push %eax
-                mov $45,%eax
+                mov $SYS_BRK_LINUX32,%eax
                 call syscall
                 pop %ecx
                 mov %eax,curbrk
                 ret
 
                 .global ioctl
-ioctl:          mov $0x36,%eax
+ioctl:          mov $SYS_IOCTL_LINUX32,%eax
 
 syscall:        push %edx
                 push %ecx

@@ -1,38 +1,41 @@
 // Copyright (c) 2004 Robert Nordier.  All rights reserved.
 
 // BCPL compiler runtime
-// System interface: FreeBSD
+// System interface: FreeBSD (i386)
+// Syscall numbers from FreeBSD sys/sys/syscall.h
+
+                .include "sys_defs.inc"
 
                 .global _exit
-_exit:          mov $1,%eax
+_exit:          mov $SYS_EXIT_FREEBSD,%eax
                 int $0x80
 
                 .global read
-read:           mov $3,%eax
+read:           mov $SYS_READ_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret
 
                 .global write
-write:          mov $4,%eax
+write:          mov $SYS_WRITE_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret
 
                 .global open
-open:           mov $5,%eax
+open:           mov $SYS_OPEN_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret
 
                 .global close
-close:          mov $6,%eax
+close:          mov $SYS_CLOSE_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret
 
                 .global olseek
-olseek:         mov $0x13,%eax
+olseek:         mov $SYS_LSEEK_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret
@@ -41,7 +44,7 @@ olseek:         mov $0x13,%eax
 sbrk:           mov 4(%esp),%ecx
                 mov curbrk,%eax
                 add %eax,4(%esp)
-                mov $17,%eax
+                mov $SYS_SBRK_FREEBSD,%eax
                 int $0x80
                 jc error
                 mov curbrk,%eax
@@ -49,7 +52,7 @@ sbrk:           mov 4(%esp),%ecx
                 ret
 
                 .global ioctl
-ioctl:          mov $0x36,%eax
+ioctl:          mov $SYS_IOCTL_FREEBSD,%eax
                 int $0x80
                 jc error
                 ret

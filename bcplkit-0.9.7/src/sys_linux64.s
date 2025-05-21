@@ -1,32 +1,35 @@
 // 64-bit Linux system interface for BCPL runtime
 // Derived from original 32-bit sys_linux.s
+// Syscall numbers from Linux arch/x86/entry/syscalls/syscall_64.tbl
+
+        .include "sys_defs.inc"
 
         .text
         .global _exit, read, write, open, close, olseek, sbrk, ioctl, isatty
         .global oflags, curbrk, errno
 
 _exit:
-        mov $60, %rax
+        mov $SYS_EXIT_LINUX64, %rax
         jmp syscall_common
 
 read:
-        mov $0, %rax
+        mov $SYS_READ_LINUX64, %rax
         jmp syscall_common
 
 write:
-        mov $1, %rax
+        mov $SYS_WRITE_LINUX64, %rax
         jmp syscall_common
 
 open:
-        mov $2, %rax
+        mov $SYS_OPEN_LINUX64, %rax
         jmp syscall_common
 
 close:
-        mov $3, %rax
+        mov $SYS_CLOSE_LINUX64, %rax
         jmp syscall_common
 
 olseek:
-        mov $8, %rax
+        mov $SYS_LSEEK_LINUX64, %rax
         jmp syscall_common
 
 sbrk:
@@ -43,13 +46,13 @@ sbrk:
 
 brk_call:
         mov %rax, %rdi
-        mov $12, %rax
+        mov $SYS_BRK_LINUX64, %rax
         syscall
         mov %rdi, curbrk(%rip)
         ret
 
 ioctl:
-        mov $16, %rax
+        mov $SYS_IOCTL_LINUX64, %rax
         jmp syscall_common
 
 syscall_common:
