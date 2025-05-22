@@ -26,7 +26,7 @@ for pkg in \
   pkg-config file ca-certificates curl git unzip \
   libopenblas-dev liblapack-dev libeigen3-dev \
   strace ltrace linux-perf systemtap systemtap-sdt-dev crash \
-  valgrind kcachegrind trace-cmd kernelshark \
+  valgrind kcachegrind trace-cmd kernelshark afl++ \
   libasan6 libubsan1 likwid hwloc; do
   apt_pin_install "$pkg"
 done
