@@ -19,7 +19,7 @@ done
 apt-get update -y
 
 for pkg in \
-  build-essential gcc g++ clang lld llvm \
+  build-essential gcc g++ clang clang-tidy clang-tools lld llvm \
   clang-format uncrustify astyle editorconfig pre-commit \
   make bmake ninja-build cmake meson \
   autoconf automake libtool m4 gawk flex bison byacc \

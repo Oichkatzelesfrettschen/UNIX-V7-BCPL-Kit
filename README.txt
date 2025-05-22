@@ -57,3 +57,9 @@ Testing
 Run `tests/run_tests.sh` to build the BCPL toolchain and compile a small
 program in both 32- and 64-bit modes. Continuous integration performs
 the same steps on GitHub Actions.
+
+Code quality
+------------
+Run `pre-commit install` to set up git hooks for clang-tidy. The
+configuration checks C files with the C23 standard and any C++ sources
+with the C++17 standard.

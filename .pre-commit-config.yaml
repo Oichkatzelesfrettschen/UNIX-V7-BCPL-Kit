@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: clang-tidy-c
+        name: clang-tidy (C23)
+        entry: clang-tidy --extra-arg=-std=c23
+        language: system
+        types: [c]
+      - id: clang-tidy-cpp
+        name: clang-tidy (C++17)
+        entry: clang-tidy --extra-arg=-std=c++17
+        language: system
+        types: [cpp]
