@@ -68,7 +68,8 @@ Further information
 -------------------
 
 See `bcplkit-0.9.7/doc/porting-to-64bit.md` for notes on experimental
-64-bit support.
+64-bit support. See `doc/IPC.md` for a description of the mailbox
+abstraction and its timeout semantics.
 
 Testing
 -------
