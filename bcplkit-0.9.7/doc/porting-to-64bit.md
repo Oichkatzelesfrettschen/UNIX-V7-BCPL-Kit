@@ -11,16 +11,20 @@ fully‑functional 64‑bit environment.
 ### Building for 32‑ or 64‑bit
 
 Running `makeall` selects an interface file based on the host and then
-invokes `make` in each subdirectory.  The build script honours a
-`BITS` variable which controls the word size of the resulting binaries
-and is passed through to each Makefile.  For example,
+prepares the sources for the build.  The script honours a `BITS`
+variable which controls the word size of the resulting binaries and is
+propagated to the build system.  For example,
 
 To build the experimental 64-bit version set `BITS=64` when invoking
-`makeall` or `make`:
+`makeall` or the build system:
 
 1. `BITS=64 ./makeall`
-2. Or from within the `src` directory run `make BITS=64` once the link
-   is in place.
+2. Configure with CMake and Ninja and build from a dedicated directory:
+
+   ```sh
+   cmake -B build -G Ninja -DBITS=64
+   ninja -C build
+   ```
 
 The build system links `src/sys.s` to `sys_linux64.s` when `BITS=64`
 and to `sys_linux.s` otherwise (the default follows the host
@@ -33,9 +37,10 @@ BITS=64 ./makeall    # force a 64‑bit build
 BITS=32 ./makeall    # force a 32‑bit build
 ```
 
-`make` may also be run directly in `src` with `BITS` set.  Object files
-are placed under `build/32` or `build/64` depending on the value of this
-variable.
+Object files are placed under `build/32` or `build/64` depending on the
+value of this variable when using the CMake or Meson builds.  Meson may
+be used in place of CMake via `meson setup builddir --native-file` and
+`ninja -C builddir`.  Both build systems detect Bison automatically.
 
 The helper file `src/sys.s` is a link to the appropriate system
 interface (`sys_linux.s`, `sys_linux64.s`, or `sys_freebsd.s`).

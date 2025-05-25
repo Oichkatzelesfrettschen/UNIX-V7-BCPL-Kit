@@ -15,8 +15,7 @@ Building the BCPL compiler
 --------------------------
 
 Enter `bcplkit-0.9.7` and run the provided script which configures the
-build by linking `src/sys.s` to the appropriate system interface file and
-then invokes `make`:
+build by linking `src/sys.s` to the appropriate system interface file:
 
 ```sh
 cd bcplkit-0.9.7
@@ -24,8 +23,27 @@ sh makeall    # or ./makeall when executable
 ```
 
 The script picks `sys_linux.s`, `sys_freebsd.s` or `sys_linux64.s` based
-on the host platform.  You can also create the `src/sys.s` link manually
-and run `make` inside the `src` directory.
+on the host platform.  You can also create the `src/sys.s` link manually.
+
+### CMake/Ninja
+
+After configuration, generate the build directory with CMake and the
+Ninja generator:
+
+```sh
+cmake -B build -G Ninja
+ninja -C build
+```
+
+Meson builds are optional and follow the same pattern:
+
+```sh
+meson setup builddir
+ninja -C builddir
+```
+
+Both build systems detect Bison automatically using `find_package(BISON)`
+in CMake or Meson's `bison` dependency.
 
 Self-hosting and tests
 ---------------------
