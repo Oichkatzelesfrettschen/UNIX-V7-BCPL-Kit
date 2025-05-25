@@ -84,6 +84,13 @@ cd /usr/src/libmp
 ./compall; ./mklib; cp libmp.a /usr/lib
 rm libmp.a *.o
 
+echo "== libcapnp_helpers =="
+cd /usr/src/libcapnp_helpers
+make
+cp libcapnp_helpers.a /usr/lib
+cp helpers.h /usr/include
+rm libcapnp_helpers.a *.o
+
 echo "== games =="
 cd /usr/src/games
 for i in arithmetic backgammon fish fortune hangman quiz wump
