@@ -26,6 +26,7 @@
  * per user.
  */
 #include "../h/spinlock.h"
+#include "../../../../src-headers/ipc_status.h"
 
 struct
 {
@@ -118,8 +119,9 @@ loop:
 			wakeup((caddr_t)pp);
 			cp->p_stat = SSTOP;
 			swtch();
-			if ((cp->p_flag&STRC)==0 || procxmt())
-				return;
+                        if ((cp->p_flag&STRC)==0 ||
+                            procxmt() == IPC_STATUS_CONTINUE)
+                                return;
 			goto loop;
 		}
 	exit(fsig(u.u_procp));
@@ -329,6 +331,7 @@ ptrace()
  * executes to implement the command
  * of the parent process in tracing.
  */
+ipc_status_t
 procxmt()
 {
         register int i;
@@ -336,7 +339,7 @@ procxmt()
         register struct text *xp;
 
         if (ipc.ip_owner != u.u_procp->p_pid)
-                return(0);
+                return IPC_STATUS_ERROR;
 	i = ipc.ip_req;
 	ipc.ip_req = 0;
 	wakeup((caddr_t)&ipc);
@@ -416,7 +419,7 @@ procxmt()
 		u.u_procp->p_sig = 0;
 		if (ipc.ip_data)
 			psignal(u.u_procp, ipc.ip_data);
-		return(1);
+                return IPC_STATUS_CONTINUE;
 
 	/* force exit */
 	case 8:
@@ -424,7 +427,8 @@ procxmt()
 
 	default:
 	error:
-		ipc.ip_req = -1;
-	}
-	return(0);
+                ipc.ip_req = -1;
+                return IPC_STATUS_ERROR;
+        }
+        return IPC_STATUS_OK;
 }
