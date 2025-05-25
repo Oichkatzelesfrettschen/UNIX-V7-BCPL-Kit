@@ -10,6 +10,7 @@
 #include "../h/reg.h"
 #include "../h/text.h"
 #include "../h/seg.h"
+#include <stdint.h>
 
 /*
  * Priority for tracing
@@ -29,10 +30,10 @@
 struct
 {
         lock_t  ip_lock;
-        int     ip_owner;
-        int     ip_req;
-        int     *ip_addr;
-        int     ip_data;
+        int32_t ip_owner;
+        int32_t ip_req;
+        int32_t *ip_addr;
+        int32_t ip_data;
 } ipc;
 
 /*
