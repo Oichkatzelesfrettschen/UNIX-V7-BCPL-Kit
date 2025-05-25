@@ -1,3 +1,4 @@
+#pragma once
 /* UNIX V7 source code: see /COPYRIGHT or www.tuhs.org for details. */
 /* Changes: Copyright (c) 1999 Robert Nordier. All rights reserved. */
 
@@ -12,9 +13,9 @@
  */
 extern struct bdevsw
 {
-	int	(*d_open)();
-	int	(*d_close)();
-	int	(*d_strategy)();
+	void (*d_open)(dev_t, int);
+	void (*d_close)(dev_t, int);
+	void (*d_strategy)(struct buf *);
 	struct buf *d_tab;
 } bdevsw[];
 
@@ -23,12 +24,12 @@ extern struct bdevsw
  */
 extern struct cdevsw
 {
-	int	(*d_open)();
-	int	(*d_close)();
-	int	(*d_read)();
-	int	(*d_write)();
-	int	(*d_ioctl)();
-	int	(*d_stop)();
+	void (*d_open)(dev_t, int);
+	void (*d_close)(dev_t, int);
+	void (*d_read)(dev_t);
+	void (*d_write)(dev_t);
+	void (*d_ioctl)(dev_t, int, caddr_t, int);
+	void (*d_stop)(struct tty *);
 	struct tty *d_ttys;
 } cdevsw[];
 
@@ -37,14 +38,14 @@ extern struct cdevsw
  */
 extern struct linesw
 {
-	int	(*l_open)();
-	int	(*l_close)();
-	int	(*l_read)();
-	int	(*l_write)();
-	int	(*l_ioctl)();
-	int	(*l_rint)();
-	int	(*l_rend)();
-	int	(*l_meta)();
-	int	(*l_start)();
-	int	(*l_modem)();
+	int (*l_open)(dev_t, struct tty *, caddr_t);
+	int (*l_close)(struct tty *);
+	int (*l_read)(struct tty *);
+	caddr_t (*l_write)(struct tty *);
+	int (*l_ioctl)(int, struct tty *, caddr_t);
+	int (*l_rint)(int, struct tty *);
+	int (*l_rend)(struct tty *);
+	int (*l_meta)(struct tty *, int);
+	void (*l_start)(struct tty *);
+	int (*l_modem)(struct tty *, int);
 } linesw[];

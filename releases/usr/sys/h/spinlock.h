@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _SPINLOCK_H_
 #define _SPINLOCK_H_
 

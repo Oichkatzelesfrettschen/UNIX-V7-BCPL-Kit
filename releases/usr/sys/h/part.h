@@ -1,3 +1,4 @@
+#pragma once
 /* V7/x86 source code: see www.nordier.com/v7x86 for details. */
 /* Copyright (c) 2006 Robert Nordier.  All rights reserved. */
 

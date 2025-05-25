@@ -1,3 +1,4 @@
+#pragma once
 /* UNIX V7 source code: see /COPYRIGHT or www.tuhs.org for details. */
 
 #define	NOSLEEP	0400
@@ -8,4 +9,4 @@
 
 int	bwaiting,wcount;
 
-char *getepack();
+char *getepack(void);

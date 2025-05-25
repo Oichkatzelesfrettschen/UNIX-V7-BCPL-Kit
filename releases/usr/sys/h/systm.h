@@ -1,3 +1,4 @@
+#pragma once
 /* UNIX V7 source code: see /COPYRIGHT or www.tuhs.org for details. */
 
 /*
@@ -47,22 +48,22 @@ dev_t	pipedev;		/* pipe device */
 extern	int	icode[];	/* user init code */
 extern	int	szicode;	/* its size */
 
-dev_t getmdev();
-daddr_t	bmap();
-struct inode *ialloc();
-struct inode *iget();
-struct inode *owner();
-struct inode *maknode();
-struct inode *namei();
-struct buf *alloc();
-struct buf *getblk();
-struct buf *geteblk();
-struct buf *bread();
-struct buf *breada();
-struct filsys *getfs();
-struct file *getf();
-struct file *falloc();
-int	uchar();
+dev_t getmdev(void);
+daddr_t bmap(struct inode *, daddr_t, int);
+struct inode *ialloc(dev_t);
+struct inode *iget(dev_t, ino_t);
+struct inode *owner(void);
+struct inode *maknode(int);
+struct inode *namei(int (*)(void), int);
+struct buf *alloc(dev_t);
+struct buf *getblk(dev_t, daddr_t);
+struct buf *geteblk(void);
+struct buf *bread(dev_t, daddr_t);
+struct buf *breada(dev_t, daddr_t, daddr_t);
+struct filsys *getfs(dev_t);
+struct file *getf(int);
+struct file *falloc(void);
+int uchar(void);
 /*
  * Instrumentation
  */
@@ -79,5 +80,5 @@ long	tk_nout;
 extern struct sysent {
 	char	sy_narg;		/* total number of arguments */
 	char	sy_nrarg;		/* number of args in registers */
-	int	(*sy_call)();		/* handler */
+	void (*sy_call)(void);		/* handler */
 } sysent[];

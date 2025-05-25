@@ -1,3 +1,4 @@
+#pragma once
 /* UNIX V7 source code: see /COPYRIGHT or www.tuhs.org for details. */
 /* Changes: Copyright (c) 1999 Robert Nordier. All rights reserved. */
 
@@ -47,8 +48,8 @@ struct tty
 	struct	clist t_rawq;	/* input chars right off device */
 	struct	clist t_canq;	/* input chars after erase and kill */
 	struct	clist t_outq;	/* output list to device */
-	int	(* t_oproc)();	/* routine to start output */
-	int	(* t_iproc)();	/* routine to start input */
+	void (* t_oproc)(struct tty *);	/* routine to start output */
+	void (* t_iproc)(struct tty *);	/* routine to start input */
 	struct chan *t_chan;	/* destination channel */
 	caddr_t	t_linep;	/* aux line discipline pointer */
 	caddr_t	t_addr;		/* device address */
