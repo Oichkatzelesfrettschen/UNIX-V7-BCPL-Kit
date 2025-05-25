@@ -1,0 +1,32 @@
+GET "LIBHDR"
+
+MANIFEST $( MB_TIMEOUT = -1 $)
+
+LET CreateMailbox(size) = VALOF
+$( LET mb = VEC (size + 4)
+   mb!0 := size
+   mb!1 := 0
+   mb!2 := 0
+   mb!3 := 0
+   RESULTIS mb
+$)
+
+AND SendMessage(mb, msg) = VALOF
+$( IF mb!1 >= mb!0 RESULTIS 0
+   LET t = mb!3
+   mb!(4+t) := msg
+   mb!3 := (t + 1) REM mb!0
+   mb!1 := mb!1 + 1
+   RESULTIS 1
+$)
+
+AND ReceiveMessage(mb, timeout) = VALOF
+$( LET t = timeout
+   WHILE mb!1 = 0 & t > 0 DO t := t - 1
+   IF mb!1 = 0 RESULTIS MB_TIMEOUT
+   LET h = mb!2
+   LET msg = mb!(4+h)
+   mb!2 := (h + 1) REM mb!0
+   mb!1 := mb!1 - 1
+   RESULTIS msg
+$)
