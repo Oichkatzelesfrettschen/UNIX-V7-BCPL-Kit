@@ -818,8 +818,27 @@ _cli:
 
 .globl	_sti
 _sti:
-	sti
-	ret
+        sti
+        ret
+
+.globl  _sched_lock_acquire
+_sched_lock_acquire:
+        mov     $_sched_lock, %edx
+1:
+        movl    $1, %eax
+        xchg    %eax,(%edx)
+        test    %eax,%eax
+        je      2f
+        pause
+        jmp     1b
+2:
+        ret
+
+.globl  _sched_lock_release
+_sched_lock_release:
+        mov     $_sched_lock, %edx
+        movl    $0,(%edx)
+        ret
 
 // Constants
 

@@ -10,10 +10,12 @@
 #include "../h/file.h"
 #include "../h/inode.h"
 #include "../h/buf.h"
+#include "../h/spinlock.h"
 
 #define SQSIZE 0100	/* Must be power of 2 */
 #define HASH(x)	(( (int) x >> 5) & (SQSIZE-1))
 struct proc *slpque[SQSIZE];
+spinlock_t sched_lock;
 
 /*
  * Give up the processor till a wakeup occurs
@@ -120,19 +122,22 @@ register caddr_t chan;
 setrq(p)
 struct proc *p;
 {
-	register struct proc *q;
-	register s;
+        register struct proc *q;
+        register s;
 
-	s = spl6();
-	for(q=runq; q!=NULL; q=q->p_link)
-		if(q == p) {
-			printf("proc on q\n");
-			goto out;
-		}
-	p->p_link = runq;
-	runq = p;
+        s = spl6();
+        spin_lock(&sched_lock);
+        for(q=runq; q!=NULL; q=q->p_link)
+                if(q == p) {
+                        printf("proc on q\n");
+                        spin_unlock(&sched_lock);
+                        goto out;
+                }
+        p->p_link = runq;
+        runq = p;
+        spin_unlock(&sched_lock);
 out:
-	splx(s);
+        splx(s);
 }
 
 /*
@@ -379,11 +384,12 @@ swtch()
 	if (save(u.u_qsav)==0 && save(u.u_rsav))
 		return;
 loop:
-	spl6();
-	runrun = 0;
-	pp = NULL;
-	q = NULL;
-	n = 128;
+        spl6();
+        spin_lock(&sched_lock);
+        runrun = 0;
+        pp = NULL;
+        q = NULL;
+        n = 128;
 	/*
 	 * Search for highest-priority runnable process
 	 */
@@ -400,17 +406,19 @@ loop:
 	/*
 	 * If no process is runnable, idle.
 	 */
-	p = pp;
-	if(p == NULL) {
-		idle();
-		goto loop;
-	}
-	q = pq;
-	if(q == NULL)
-		runq = p->p_link;
-	else
-		q->p_link = p->p_link;
-	curpri = n;
+        p = pp;
+        if(p == NULL) {
+                spin_unlock(&sched_lock);
+                idle();
+                goto loop;
+        }
+        q = pq;
+        if(q == NULL)
+                runq = p->p_link;
+        else
+                q->p_link = p->p_link;
+        spin_unlock(&sched_lock);
+        curpri = n;
 	spl0();
 	/*
 	 * The rsav (ssav) contents are interpreted in the new address space
