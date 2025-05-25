@@ -1,5 +1,4 @@
-#ifndef SPINLOCK_H
-#define SPINLOCK_H
+#pragma once
 
 #include <stdint.h>
 #include <stdalign.h>
@@ -28,7 +27,7 @@ static inline unsigned int detect_cache_line_size(void)
 #endif
 
 struct spinlock {
-    volatile int locked;
+    volatile uint32_t locked;
 } __attribute__((aligned(CACHE_LINE_SIZE)));
 
 static inline void spin_lock(struct spinlock *lock)
@@ -48,4 +47,3 @@ static inline void spin_unlock(struct spinlock *lock)
 }
 #endif
 
-#endif /* SPINLOCK_H */
