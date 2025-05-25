@@ -35,4 +35,5 @@ esac
 (echo ==== troff =====; cd troff; make $arg)
 (echo ==== uucp =====; cd uucp; make $arg)
 (echo ==== xsend =====; cd xsend; make $arg)
+(echo ==== capnpdemo =====; cd capnpdemo; make $arg)
 (echo ==== yacc =====; cd yacc; make $arg)
