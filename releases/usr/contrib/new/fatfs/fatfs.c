@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdint.h>
 
 extern char *index(), *malloc(), *rindex(), *strcat();
 extern struct tm *localtime();
@@ -13,26 +14,26 @@ extern struct tm *localtime();
 #define strchr(x,y)   index(x,y)
 #define strrchr(x,y)  rindex(x,y)
 
-#define CV2(p) ((u_short)(p)[0] |         \
-               ((u_short)(p)[1] << 010))
+#define CV2(p) ((uint16_t)(p)[0] |         \
+               ((uint16_t)(p)[1] << 010))
 
-#define CV4(p) ((u_long)(p)[0] |          \
-               ((u_long)(p)[1] << 010) |  \
-               ((u_long)(p)[2] << 020) |  \
-               ((u_long)(p)[3] << 030))
+#define CV4(p) ((uint32_t)(p)[0] |          \
+               ((uint32_t)(p)[1] << 010) |  \
+               ((uint32_t)(p)[2] << 020) |  \
+               ((uint32_t)(p)[3] << 030))
 
 #define MK2(p, u)                  \
 {                                  \
-   (p)[0] = (u_char)(u);           \
-   (p)[1] = (u_char)((u) >> 010);  \
+   (p)[0] = (uint8_t)(u);           \
+   (p)[1] = (uint8_t)((u) >> 010);  \
 }
 
 #define MK4(p, u)                  \
 {                                  \
-   (p)[0] = (u_char)(u);           \
-   (p)[1] = (u_char)((u) >> 010);  \
-   (p)[2] = (u_char)((u) >> 020);  \
-   (p)[3] = (u_char)((u) >> 030);  \
+   (p)[0] = (uint8_t)(u);           \
+   (p)[1] = (uint8_t)((u) >> 010);  \
+   (p)[2] = (uint8_t)((u) >> 020);  \
+   (p)[3] = (uint8_t)((u) >> 030);  \
 }
 
 #define SECSIZ  512             /* sector size */
@@ -46,70 +47,67 @@ extern struct tm *localtime();
 #define FA_DIR    0x10          /* file attribute: directory */
 #define FA_ARCH   0x20          /* file attribute: archive */
 
-#define FATOFS(fat12, c)  ((u_long)(c) + ((fat12) ? (c) >> 1 : (c)))
+#define FATOFS(fat12, c)  ((uint32_t)(c) + ((fat12) ? (c) >> 1 : (c)))
 
-typedef unsigned char u_char;
-typedef unsigned short u_short;
-typedef unsigned long u_long;
 
 typedef struct {
-    u_char secsiz[2];           /* sector size */
-    u_char spc;                 /* sectors per cluster */
-    u_char ressec[2];           /* reserved sectors */
-    u_char fats;                /* FATs */
-    u_char dirents[2];          /* root directory entries */
-    u_char secs[2];             /* total sectors */
-    u_char media;               /* media descriptor */
-    u_char spf[2];              /* sectors per FAT */
-    u_char spt[2];              /* sectors per track */
-    u_char heads[2];            /* drive heads */
-    u_char hidsec[4];           /* hidden sectors */
-    u_char lsecs[4];            /* huge sectors */
+    uint8_t secsiz[2];           /* sector size */
+    uint8_t spc;                 /* sectors per cluster */
+    uint8_t ressec[2];           /* reserved sectors */
+    uint8_t fats;                /* FATs */
+    uint8_t dirents[2];          /* root directory entries */
+    uint8_t secs[2];             /* total sectors */
+    uint8_t media;               /* media descriptor */
+    uint8_t spf[2];              /* sectors per FAT */
+    uint8_t spt[2];              /* sectors per track */
+    uint8_t heads[2];            /* drive heads */
+    uint8_t hidsec[4];           /* hidden sectors */
+    uint8_t lsecs[4];            /* huge sectors */
 } BPB;
 
 typedef struct {
-    u_char jmp[3];              /* usually 80x86 'jmp' opcode */
-    u_char oem[8];              /* OEM name and version */
+    uint8_t jmp[3];              /* usually 80x86 'jmp' opcode */
+    uint8_t oem[8];              /* OEM name and version */
     BPB bpb;                    /* BPB */
-    u_char drive;               /* drive number */
-    u_char reserved;            /* reserved */
-    u_char extsig;              /* extended boot signature */
-    u_char volid[4];            /* volume ID */
-    u_char label[11];           /* volume label */
-    u_char fstype[8];           /* file system type */
+    uint8_t drive;               /* drive number */
+    uint8_t reserved;            /* reserved */
+    uint8_t extsig;              /* extended boot signature */
+    uint8_t volid[4];            /* volume ID */
+    uint8_t label[11];           /* volume label */
+    uint8_t fstype[8];           /* file system type */
 } BS;
 
 typedef struct {
-    u_char name[8];             /* name */
-    u_char ext[3];              /* extension */
-    u_char attr;                /* attributes */
-    u_char reserved[10];        /* reserved */
-    u_char time[2];             /* time */
-    u_char date[2];             /* date */
-    u_char clus[2];             /* starting cluster */
-    u_char size[4];             /* file size */
+    uint8_t name[8];             /* name */
+    uint8_t ext[3];              /* extension */
+    uint8_t attr;                /* attributes */
+    uint8_t reserved[10];        /* reserved */
+    uint8_t time[2];             /* time */
+    uint8_t date[2];             /* date */
+    uint8_t clus[2];             /* starting cluster */
+    uint8_t size[4];             /* file size */
 } DE;
 
 typedef struct {
-    u_char *fat;                /* FAT */
+    uint8_t *fat;                /* FAT */
     DE *dir;                    /* root directory */
-    u_long lsnfat;              /* logical sector number: fat */
-    u_long lsndir;              /* logical sector number: dir */
-    u_long lsndta;              /* logical sector number: data area */
+    uint32_t lsnfat;              /* logical sector number: fat */
+    uint32_t lsndir;              /* logical sector number: dir */
+    uint32_t lsndta;              /* logical sector number: data area */
     int fd;                     /* file descriptor */
     int fat12;                  /* 12-bit FAT entries */
-    u_short spf;                /* sectors per fat */
-    u_short dirents;            /* root directory entries */
-    u_short spc;                /* sectors per cluster */
-    u_short xclus;              /* maximum cluster number */
+    uint16_t spf;                /* sectors per fat */
+    uint16_t dirents;            /* root directory entries */
+    uint16_t spc;                /* sectors per cluster */
+    uint16_t xclus;              /* maximum cluster number */
 } DP;
 
 char *progname;
 
 char *fat_date(), *catpath(), *alloc();
 DE *lookup(), *de_look();
-u_char *nxname();
-u_short getfat();
+uint8_t *nxname();
+uint16_t getfat();
 
 int
 main(argc, argv)
@@ -179,10 +177,10 @@ char *target;
     DE *de;
     char *fn;
     char *buf;
-    u_long cnt;
+    uint32_t cnt;
     int d;
-    u_short len;
-    u_short clus;
+    uint16_t len;
+    uint16_t clus;
 
     if (!(de = lookup(dp, source)))
         return 1;
@@ -205,7 +203,7 @@ char *target;
     buf = alloc(len);
     clus = CV2(de->clus);
     for (cnt = CV4(de->size); cnt; cnt -= len) {
-        fat_read(dp, buf, dp->lsndta + (u_long) (clus - 2) * dp->spc,
+        fat_read(dp, buf, dp->lsndta + (uint32_t) (clus - 2) * dp->spc,
                  dp->spc);
         if (len > cnt)
             len = cnt;
@@ -229,16 +227,16 @@ char *source;
 char *target;
 {
     struct stat st;
-    u_char *nx;
+    uint8_t *nx;
     DE *de;
     char *buf;
-    u_long size;
+    uint32_t size;
     int d;
-    u_short dd, dt;
-    u_short len;
-    u_short cnt;
-    u_short clus;
-    u_short i;
+    uint16_t dd, dt;
+    uint16_t len;
+    uint16_t cnt;
+    uint16_t clus;
+    uint16_t i;
 
     if (stat(source, &st) == -1) {
         warn("%s: Cannot stat", source);
@@ -283,7 +281,7 @@ char *target;
     size = 0;
     clus = 0;
     while ((cnt = read(d, buf, len)) != 0) {
-        if (cnt == (u_short) - 1)
+        if (cnt == (uint16_t) - 1)
             error("%s: Read error", source);
         for (i = clus ? clus + 1 : 2;
              i <= dp->xclus && getfat(dp, i);
@@ -297,7 +295,7 @@ char *target;
         else
             MK2(de->clus, i);
         clus = i;
-        fat_write(dp, buf, dp->lsndta + (u_long) (clus - 2) * dp->spc,
+        fat_write(dp, buf, dp->lsndta + (uint32_t) (clus - 2) * dp->spc,
                   dp->spc);
         size += cnt;
     }
@@ -336,7 +334,7 @@ DP *dp;
 char *name;
 {
     DE *de;
-    u_char *nx;
+    uint8_t *nx;
 
     if (!(nx = nxname(name)))
         return NULL;
@@ -345,11 +343,11 @@ char *name;
     return de;
 }
 
-u_char *
+uint8_t *
 nxname(name)
 char *name;
 {
-    static u_char nx[DENMSZ + DEXTSZ];
+    static uint8_t nx[DENMSZ + DEXTSZ];
 
     if (de_namex(nx, name)) {
         warn("%s: Invalid filename", name);
@@ -360,7 +358,7 @@ char *name;
 
 int
 de_namex(nx, name)
-u_char *nx;
+uint8_t *nx;
 char *name;
 {
     int i;
@@ -381,7 +379,7 @@ char *name;
 DE *
 de_look(dp, nx)
 DP *dp;
-u_char *nx;
+uint8_t *nx;
 {
     unsigned i;
 
@@ -399,7 +397,7 @@ char *fs;
 {
     char buf[SECSIZ];
     BS *bs = (BS *) buf;
-    u_long sc;
+    uint32_t sc;
 
     if ((dp->fd = open(fs, rdwr ? 2 : 0)) < 0)
         error("%s: Cannot open", fs);
@@ -428,8 +426,8 @@ char *fs;
         dp->spf < (FATOFS(dp->fat12, sc + 1) + SECSIZ) / SECSIZ)
         error("%s: Invalid filesystem parameters", fs);
     dp->xclus = sc + 1;
-    dp->fat = (u_char *)alloc((u_long) dp->spf * SECSIZ);
-    dp->dir = (DE *)alloc((u_long) dp->dirents / DEPS * SECSIZ);
+    dp->fat = (uint8_t *)alloc((uint32_t) dp->spf * SECSIZ);
+    dp->dir = (DE *)alloc((uint32_t) dp->dirents / DEPS * SECSIZ);
     fat_read(dp, dp->fat, dp->lsnfat, dp->spf);
     fat_read(dp, dp->dir, dp->lsndir, dp->dirents / DEPS);
 }
@@ -441,12 +439,12 @@ DP *dp;
         error("close error");
 }
 
-u_short
+uint16_t
 getfat(dp, c)
 DP *dp;
-u_short c;
+uint16_t c;
 {
-    u_short x;
+    uint16_t x;
 
     x = CV2(dp->fat + FATOFS(dp->fat12, c));
     return dp->fat12 ? c & 1 ? x >> 4 : x & 0xfff : x;
@@ -454,11 +452,11 @@ u_short c;
 
 setfat(dp, c, x)
 DP *dp;
-u_short c;
-u_short x;
+uint16_t c;
+uint16_t x;
 {
-    u_long i;
-    u_short e;
+    uint32_t i;
+    uint16_t e;
 
     i = FATOFS(dp->fat12, c);
     e = dp->fat12 ? CV2(dp->fat + i) & (c & 1 ? 0xf : 0xf000) : 0;
@@ -467,13 +465,13 @@ u_short x;
 
 fat_sync(dp, start_c)
 DP *dp;
-u_short start_c;
+uint16_t start_c;
 {
-    u_long i;
-    u_short out;
-    u_short c;
-    u_short sec;
-    u_short cpy;
+    uint32_t i;
+    uint16_t out;
+    uint16_t c;
+    uint16_t sec;
+    uint16_t cpy;
 
     out = 0xffff;
     for (c = start_c; c >= 2 && c <= dp->xclus; c = getfat(dp, c)) {
@@ -491,8 +489,8 @@ u_short start_c;
 fat_read(dp, buf, sec, cnt)
 DP *dp;
 char *buf;
-u_long sec;
-u_short cnt;
+uint32_t sec;
+uint16_t cnt;
 {
     if (lseek(dp->fd, sec * SECSIZ, 0) == -1 ||
         read(dp->fd, buf, cnt * SECSIZ) != cnt * SECSIZ)
@@ -502,8 +500,8 @@ u_short cnt;
 fat_write(dp, buf, sec, cnt)
 DP *dp;
 char *buf;
-u_long sec;
-u_short cnt;
+uint32_t sec;
+uint16_t cnt;
 {
     if (lseek(dp->fd, sec * SECSIZ, 0) == -1 ||
         write(dp->fd, buf, cnt * SECSIZ) != cnt * SECSIZ)
@@ -518,15 +516,15 @@ fat_char(c)
 
 char *
 fat_date(ddate, dtime)
-u_short ddate;
-u_short dtime;
+uint16_t ddate;
+uint16_t dtime;
 {
     static char mth[12][4] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
     static char buf[32];
-    u_short dy, dm, dd, th, tm;
+    uint16_t dy, dm, dd, th, tm;
 
     dy = 80 + (ddate >> 9);
     dm = ((ddate >> 5) & 0xf) - 1;
@@ -541,18 +539,18 @@ u_short dtime;
 
 time_utod(timer, d, t)
 long timer;
-u_short *d;
-u_short *t;
+uint16_t *d;
+uint16_t *t;
 {
     struct tm *tm;
 
     tm = localtime(&timer);
-    *d = ((u_short) tm->tm_year - 80) << 9 |
-        ((u_short) tm->tm_mon + 1) << 5 |
-        (u_short) tm->tm_mday;
-    *t = (u_short) tm->tm_hour << 11 |
-        (u_short) tm->tm_min << 5 |
-        (u_short) tm->tm_sec >> 1;
+    *d = ((uint16_t) tm->tm_year - 80) << 9 |
+        ((uint16_t) tm->tm_mon + 1) << 5 |
+        (uint16_t) tm->tm_mday;
+    *t = (uint16_t) tm->tm_hour << 11 |
+        (uint16_t) tm->tm_min << 5 |
+        (uint16_t) tm->tm_sec >> 1;
 }
 
 char *
