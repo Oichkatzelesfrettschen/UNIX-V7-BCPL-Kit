@@ -6,15 +6,18 @@ AS ?= as
 LD ?= ld
 CC ?= cc
 
-# Select 32- or 64-bit build
-BITS ?= $(shell case `uname -m` in *64*) echo 64 ;; *) echo 32 ;; esac)
+# Select 32- or 64-bit build.  The previous `case` construct
+# triggered parsing issues in some `make` implementations due to
+# the unescaped parentheses in the pattern.  Replace it with a
+# simpler test that checks for "64" in the machine name.
+BITS ?= $(shell uname -m | grep -q 64 && echo 64 || echo 32)
 
 OBJROOT ?= ../build
 OBJDIR ?= $(OBJROOT)/$(BITS)
 BINDIR ?= $(OBJDIR)
 
 
-CFLAGS += -m$(BITS) -std=c23 -DBITS$(BITS)
+CFLAGS += -m$(BITS) -std=c2x -DBITS$(BITS)
 AFLAGS += --$(BITS)
 
 ifeq ($(BITS),64)

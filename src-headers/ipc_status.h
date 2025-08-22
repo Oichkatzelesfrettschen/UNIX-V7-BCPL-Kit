@@ -7,7 +7,7 @@ extern "C" {
 
 typedef enum {
     IPC_STATUS_SUCCESS = 0,
-    IPC_STATUS_CONTINUE = 1,
+    IPC_STATUS_EMPTY = 1,
     IPC_STATUS_ERROR = -1
 } ipc_status_t;
 
@@ -16,3 +16,4 @@ typedef enum {
 #endif
 
 #endif /* IPC_STATUS_H */
+

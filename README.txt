@@ -58,6 +58,21 @@ suite and then rebuilding the sources with the freshly built compiler.
 
 Both targets exit with a non-zero status if a failure occurs.
 
+Kernel library
+--------------
+
+The minimal IPC support library under `src-kernel` can be built for
+32- or 64-bit targets.  The Makefile enables aggressive optimisation and
+extra warnings by default, which may be overridden via `CFLAGS` if
+desired:
+
+```sh
+cd src-kernel
+BITS=64 make      # or BITS=32 for a 32-bit build
+```
+
+The resulting archive is placed in `src-kernel/build/<bits>/libkernel.a`.
+
 Missing components
 ------------------
 
@@ -74,11 +89,28 @@ abstraction and its timeout semantics.
 Testing
 -------
 Run `tests/run_tests.sh` to build the BCPL toolchain and compile a small
-program in both 32- and 64-bit modes. Continuous integration performs
-the same steps on GitHub Actions.
+program in both 32- and 64-bit modes. The 32-bit step requires a compiler
+that supports `-m32` and multilib headers; the script performs a sanity
+check for `bits/libc-header-start.h` to verify that the 32-bit libc
+development files are present. If your system lacks these components the
+script skips the 32-bit build. The script also exercises a minimal kernel
+module build which depends on `clang` and the currently installed Linux
+kernel headers; when either is missing the module test is skipped as well.
+
+On Debian/Ubuntu the toolchain and test prerequisites can be installed
+with:
+
+```sh
+sudo apt-get install build-essential gcc-multilib libc6-dev-i386 clang \
+    linux-headers-$(uname -r) pre-commit
+```
+
+Continuous integration performs the same build and test steps on GitHub
+Actions.
 
 Code quality
 ------------
-Run `pre-commit install` to set up git hooks for clang-tidy. The
+Install `pre-commit` via your package manager or `pip install pre-commit`
+and run `pre-commit install` to set up git hooks for clang-tidy. The
 configuration checks C files with the C23 standard and any C++ sources
 with the C++17 standard.
