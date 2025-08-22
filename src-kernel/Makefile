@@ -1,5 +1,7 @@
 CC ?= cc
-CFLAGS ?= -std=c23 -O2
+# Enable aggressive optimisation and extensive warnings by default.  The
+# flags can still be overridden by users supplying their own `CFLAGS`.
+CFLAGS ?= -std=c2x -O3 -pipe -fstack-protector-strong -fdata-sections -ffunction-sections -Wall -Wextra -Wpedantic
 CFLAGS += -I../src-headers -m$(BITS)
 
 OBJDIR ?= build/$(BITS)

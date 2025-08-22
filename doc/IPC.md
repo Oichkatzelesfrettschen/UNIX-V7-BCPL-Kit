@@ -32,6 +32,13 @@ The interface exposes four primitive operations:
 All functions are thread safe and may be called from either user or kernel
 context depending on the system configuration.
 
+### Status Codes
+
+Kernel helpers such as `mailbox_enqueue` and `mailbox_dequeue` return an
+`ipc_status_t` value. `IPC_STATUS_SUCCESS` indicates a successful transfer,
+`IPC_STATUS_EMPTY` signals that no message was available, and
+`IPC_STATUS_ERROR` reports a generic failure.
+
 ## Timeout Semantics
 
 Send and receive operations accept a timeout value measured in
